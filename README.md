@@ -1,4 +1,4 @@
-# DeepApply 🚀
+# DeepApply
 
 **The Local-First, Autonomous AI Agent for Job Applications.**
 
@@ -6,7 +6,7 @@ DeepApply is a powerful, Dockerized system designed to automate the tedious proc
 
 ---
 
-## 🧠 Powered by Grok 4.1 Fast (Reasoning)
+## Powered by Grok 4.1 Fast (Reasoning)
 
 At the core of DeepApply is **Grok 4.1 Fast**, a state-of-the-art reasoning model. We selected this model for three critical reasons:
 
@@ -16,7 +16,7 @@ At the core of DeepApply is **Grok 4.1 Fast**, a state-of-the-art reasoning mode
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 -   **Local-First Architecture**: Your data (CVs, personal info, application history) stays on your machine in a local PostgreSQL database.
 -   **RAG (Retrieval-Augmented Generation)**: The agent "reads" your CV, bio, and project descriptions (stored as embeddings) to answer specific questions like "Describe a challenge you overcame."
@@ -28,7 +28,7 @@ At the core of DeepApply is **Grok 4.1 Fast**, a state-of-the-art reasoning mode
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 DeepApply is built as a set of microservices orchestrated by Docker Compose:
 
@@ -42,7 +42,7 @@ DeepApply is built as a set of microservices orchestrated by Docker Compose:
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -93,7 +93,7 @@ DeepApply is built as a set of microservices orchestrated by Docker Compose:
 
 ---
 
-## 🖥️ Usage
+## Usage
 
 1.  **Access the Dashboard**: Open [http://localhost:5173](http://localhost:5173) in your browser.
 2.  **Submit a Job**: Paste a URL (e.g., from LinkedIn or a company careers page) into the input box.
@@ -106,13 +106,13 @@ DeepApply is built as a set of microservices orchestrated by Docker Compose:
 
 ---
 
-## 🛠️ Development
+## Development
 
 -   **Backend**: `services/backend` (Fastify, TypeScript)
 -   **Frontend**: `services/frontend` (React, Vite, Tailwind/CSS)
 -   **Worker**: `services/browser-worker` (Playwright)
 -   **Database**: `infrastructure/postgres` (Schema initialization)
 
-## 📝 License
+## License
 
 MIT License.
