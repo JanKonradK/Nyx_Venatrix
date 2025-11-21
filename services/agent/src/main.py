@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os
-# We will create these modules next
+
 from .agent_logic import DeepApplyAgent
 from .rag_engine import KnowledgeBase
 
@@ -14,10 +14,10 @@ class JobRequest(BaseModel):
 @app.on_event("startup")
 async def startup_event():
     # Initialize RAG on startup (Load PyTorch model)
-    print("🚀 Loading Embedding Model (MiniLM-L6)...")
+    print("Loading Embedding Model (MiniLM-L6)...")
     global kb
     kb = KnowledgeBase()
-    print("✅ Model Loaded")
+    print("Model Loaded")
 
 @app.post("/apply")
 async def apply_to_job(job: JobRequest):
