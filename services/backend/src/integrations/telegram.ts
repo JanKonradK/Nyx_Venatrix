@@ -2,18 +2,19 @@
  * Telegram bot integration - embedded in backend
  */
 
-import { Telegraf } from 'telegraf';
+import { Context, Telegraf } from 'telegraf';
 import { JobService } from '../domain/job';
 
 export class TelegramBot {
-    private bot: Telegraf;
+    private bot: Telegraf | null;
     private jobService: JobService;
 
     constructor(jobService: JobService) {
         const token = process.env.TELEGRAM_BOT_TOKEN;
         if (!token) {
             console.warn('⚠️  TELEGRAM_BOT_TOKEN not set. Telegram bot disabled.');
-            this.bot = null as any;
+            this.bot = null;
+            this.jobService = jobService;
             return;
         }
 
@@ -25,7 +26,7 @@ export class TelegramBot {
     private setupHandlers() {
         if (!this.bot) return;
 
-        this.bot.start((ctx) => {
+        this.bot.start((ctx: Context) => {
             ctx.reply(
                 'Welcome to DeepApply! 🤖\n\n' +
                 'Send me a job URL and I\'ll automatically apply for you.\n\n' +
@@ -35,12 +36,13 @@ export class TelegramBot {
             );
         });
 
-        this.bot.command('status', async (ctx) => {
+        this.bot.command('status', async (ctx: Context) => {
             ctx.reply('✅ Bot is active and ready to process job applications!');
         });
 
         // Handle URLs
-        this.bot.on('text', async (ctx) => {
+        this.bot.on('text', async (ctx: Context) => {
+            if (!('text' in ctx.message)) return;
             const text = ctx.message.text;
 
             // Simple URL detection
