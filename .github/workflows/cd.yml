@@ -6,14 +6,11 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
-    env:
-      DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKER_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
     steps:
     - uses: actions/checkout@v4
@@ -24,15 +21,15 @@ jobs:
     - name: Login to Docker Hub
       uses: docker/login-action@v3
       with:
-        username: ${{ env.DOCKER_USERNAME }}
-        password: ${{ env.DOCKER_TOKEN }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Build and push Backend
       uses: docker/build-push-action@v5
       with:
         context: ./services/backend
         push: true
-        tags: ${{ env.DOCKER_USERNAME }}/deepapply-backend:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/deepapply-backend:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -41,7 +38,7 @@ jobs:
       with:
         context: ./services/frontend
         push: true
-        tags: ${{ env.DOCKER_USERNAME }}/deepapply-frontend:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/deepapply-frontend:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -50,7 +47,7 @@ jobs:
       with:
         context: ./services/agent
         push: true
-        tags: ${{ env.DOCKER_USERNAME }}/deepapply-agent:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/deepapply-agent:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -59,7 +56,7 @@ jobs:
       with:
         context: ./services/analytics
         push: true
-        tags: ${{ env.DOCKER_USERNAME }}/deepapply-analytics:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/deepapply-analytics:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 

@@ -7,20 +7,32 @@ import { CreateJobParams, Job, JobStateMachine, JobStatus } from './entities';
 import { JobRepository } from './repository';
 
 export class JobService {
+    private jobQueue?: Queue;
+
     constructor(
         private repository: JobRepository,
-        private jobQueue: Queue
-    ) { }
+        queue?: Queue
+    ) {
+        this.jobQueue = queue;
+    }
+
+    setQueue(queue: Queue) {
+        this.jobQueue = queue;
+    }
 
     async createAndQueue(params: CreateJobParams): Promise<{ job_id: number; status: string }> {
         // Create job in database
         const job = await this.repository.create(params);
 
-        // Add to processing queue
-        await this.jobQueue.add('process_job', {
-            job_id: job.id,
-            url: job.original_url
-        });
+        if (this.jobQueue) {
+            // Add to processing queue
+            await this.jobQueue.add('process_job', {
+                job_id: job.id,
+                url: job.original_url
+            });
+        } else {
+            console.warn('Job created but not queued: Queue not initialized');
+        }
 
         return {
             job_id: job.id,

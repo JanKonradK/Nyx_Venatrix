@@ -1,0 +1,4 @@
+self-hosted: false
+secrets:
+  - DOCKERHUB_USERNAME
+  - DOCKERHUB_TOKEN

@@ -47,12 +47,12 @@ const initializeQueue = (jobService: JobService) => {
 };
 
 // Service layer
-const jobQueue = { add: async (...args: any[]) => { } }; // Placeholder
-const jobService = new JobService(jobRepository, jobQueue as any);
+// Service layer
+const jobService = new JobService(jobRepository);
 
 // Now initialize real queue
 const realQueue = initializeQueue(jobService);
-(jobService as any).jobQueue = realQueue; // Replace placeholder
+jobService.setQueue(realQueue);
 
 // Telegram bot
 const telegramBot = new TelegramBot(jobService);
