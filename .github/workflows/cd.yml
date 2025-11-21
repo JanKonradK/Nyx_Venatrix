@@ -11,6 +11,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+
     steps:
     - uses: actions/checkout@v4
 
@@ -28,7 +31,7 @@ jobs:
       with:
         context: ./services/backend
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/deepapply-backend:latest
+        tags: ${{ env.DOCKER_USERNAME }}/deepapply-backend:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -37,7 +40,7 @@ jobs:
       with:
         context: ./services/frontend
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/deepapply-frontend:latest
+        tags: ${{ env.DOCKER_USERNAME }}/deepapply-frontend:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -46,7 +49,7 @@ jobs:
       with:
         context: ./services/agent
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/deepapply-agent:latest
+        tags: ${{ env.DOCKER_USERNAME }}/deepapply-agent:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -55,7 +58,7 @@ jobs:
       with:
         context: ./services/analytics
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/deepapply-analytics:latest
+        tags: ${{ env.DOCKER_USERNAME }}/deepapply-analytics:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
