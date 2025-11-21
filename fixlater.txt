@@ -1,8 +1,0 @@
-# Temporary Items and Technical Debt to Fix Later
-
-This file tracks temporary implementations, hardcoded values, and items that need refinement for a production-ready environment.
-
-- services/backend/src/services/llm.ts: Model name is hardcoded to 'grok-beta'. Should be configurable via environment variable.
-- services/backend/src/queue/index.ts: The worker currently delegates to the 'agent' service via HTTP. This is a temporary A/B test setup. We should decide on a final architecture (microservices vs monolith) and clean this up.
-- services/backend/src/routes/jobs.ts: The '/jobs/generate-answers' endpoint is used by the legacy browser-worker. If we switch fully to the Python agent, this endpoint and the 'generateAnswers' service might become obsolete.
-- docker-compose.yml: The 'browser-worker' service is commented out for A/B testing. Remove it if the Python agent proves superior.

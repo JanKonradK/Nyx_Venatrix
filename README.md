@@ -57,7 +57,8 @@ DeepApply is built as a set of microservices orchestrated by Docker Compose:
     Copy the example environment file and add your keys.
     ```bash
     cp .env.example .env
-    # Edit .env and add your GROK_API_KEY and OPENAI_API_KEY
+    # Edit .env and add:
+    # GROK_API_KEY, OPENAI_API_KEY, AGENT_MODEL, EMBEDDING_MODEL
     ```
 
 3.  **Setup Profile Data**

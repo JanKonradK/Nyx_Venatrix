@@ -18,7 +18,7 @@ def mock_kb():
 @pytest.fixture
 def agent(mock_kb):
     """Create agent instance with mocked dependencies."""
-    with patch.dict(os.environ, {'GROK_API_KEY': 'test_key', 'MODEL_NAME': 'grok-beta'}):
+    with patch.dict(os.environ, {'GROK_API_KEY': 'test_key', 'AGENT_MODEL': 'grok-beta'}):
         return DeepApplyAgent(kb=mock_kb)
 
 @pytest.mark.asyncio

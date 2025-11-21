@@ -11,7 +11,7 @@ const pool = new Pool({
 
 export async function embedText(text: string): Promise<number[]> {
     const response = await openai.embeddings.create({
-        model: 'text-embedding-3-small',
+        model: process.env.EMBEDDING_MODEL || 'text-embedding-3-small',
         input: text,
     });
     return response.data[0].embedding;

@@ -36,12 +36,12 @@ export default async function jobRoutes(fastify: FastifyInstance) {
                  RETURNING id`,
                 [url, source]
             );
-            const jobId = res.rows[0].id;
+            const job_id = res.rows[0].id;
 
             // 2. Add to Queue
-            await jobQueue.add('process_job', { jobId, url });
+            await jobQueue.add('process_job', { job_id, url });
 
-            return { jobId, status: 'queued' };
+            return { job_id, status: 'queued' };
         } catch (err) {
             fastify.log.error(err);
             return reply.code(500).send({ error: 'Internal Server Error' });

@@ -1,4 +1,4 @@
-# A/B Testing Strategy: Agent vs. Browser Worker
+# A/B Testing Strategy: Agent vs Browser Worker
 
 This document outlines the A/B testing strategy for the DeepApply job application system.
 
