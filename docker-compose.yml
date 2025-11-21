@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  # 1. Postgres with pgvector
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: deepapply_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-deepapply}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres:/docker-entrypoint-initdb.d
+    networks:
+      - deepapply_net
+    restart: unless-stopped
+
+  # 2. Redis for Queue
+  redis:
+    image: redis:alpine
+    container_name: deepapply_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - deepapply_net
+    restart: unless-stopped
+
+  # 3. Backend API (Node.js)
+  backend:
+    build: ./services/backend
+    container_name: deepapply_backend
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-deepapply}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - GROK_API_KEY=${GROK_API_KEY}
+      - KDB_HOST=kdb
+      - KDB_PORT=5000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./services/backend:/app
+      - /app/node_modules
+    networks:
+      - deepapply_net
+    command: npm run dev
+
+  # 4. Browser Worker (Node/Playwright)
+  browser-worker:
+    build: ./services/browser-worker
+    container_name: deepapply_browser_worker
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-deepapply}
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - ./services/browser-worker:/app
+      - /app/node_modules
+    networks:
+      - deepapply_net
+    command: npm start
+
+  # 5. Frontend (React)
+  frontend:
+    build: ./services/frontend
+    container_name: deepapply_frontend
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./services/frontend:/app
+      - /app/node_modules
+    networks:
+      - deepapply_net
+    command: npm run dev -- --host
+
+  # 6. Telegram Bot
+  telegram-bot:
+    build: ./services/telegram-bot
+    container_name: deepapply_telegram_bot
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - BACKEND_URL=http://backend:3000
+    depends_on:
+      - backend
+    volumes:
+      - ./services/telegram-bot:/app
+      - /app/node_modules
+    networks:
+      - deepapply_net
+    command: npm run dev
+
+  # 7. Salary Oracle (kdb+)
+  # Note: Requires KC_LIC (license) or use 32-bit free version if available.
+  # For now, using a placeholder setup. User might need to provide q.k/kc.lic.
+  kdb:
+    image: registry.hub.docker.com/dataintel/kdb:latest
+    container_name: deepapply_kdb
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./services/kdb/q:/q
+    environment:
+      - KDB_LICENSE_B64=${KDB_LICENSE_B64} # Base64 encoded license if needed
+    networks:
+      - deepapply_net
+    command: -p 5000
+
+networks:
+  deepapply_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

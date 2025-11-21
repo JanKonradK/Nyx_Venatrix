@@ -1,0 +1,21 @@
+fastapi==0.109.0
+uvicorn==0.27.0
+python-multipart
+requests
+# Database & Data
+psycopg2-binary
+pandas
+numpy
+sqlalchemy
+
+# AI & ML (The Heavy Hitters)
+torch --index-url https://download.pytorch.org/whl/cpu  # CPU version to keep image smaller
+transformers
+sentence-transformers # For local embeddings (Hugging Face)
+langchain
+langchain-openai
+qdrant-client
+
+# Browser Automation
+browser-use
+playwright
