@@ -1,8 +1,10 @@
+import axios from 'axios';
 import { Job, Worker } from 'bullmq';
 import dotenv from 'dotenv';
 import { Pool } from 'pg';
 import { chromium } from 'playwright-extra';
 import stealth from 'puppeteer-extra-plugin-stealth';
+import { extractFormSchema, fillForm } from './automation/form';
 
 dotenv.config();
 
@@ -42,9 +44,41 @@ async function processJob(job: Job) {
 
     // Scrape basic info (Title, Company, etc.)
     const title = await page.title();
-    const content = await page.content();
+    const content = await page.content(); // In real app, use better scraping (e.g. Readability)
+    const bodyText = await page.evaluate(() => document.body.innerText);
 
-    console.log(`Scraped title: ${title} `);
+    console.log(`Scraped title: ${title}`);
+
+    // Extract Form Schema
+    console.log('Extracting form schema...');
+    const schema = await extractFormSchema(page);
+    console.log(`Found ${schema.fields.length} fields.`);
+
+    let answers = {};
+    if (schema.fields.length > 0) {
+      // Generate Answers via Backend API
+      console.log('Requesting answers from backend...');
+      try {
+        const response = await axios.post(`${process.env.BACKEND_URL || 'http://backend:3000'}/jobs/generate-answers`, {
+          jobDescription: bodyText.substring(0, 5000), // Truncate for safety
+          formFields: schema.fields
+        });
+        answers = response.data.answers;
+        console.log('Received answers:', JSON.stringify(answers, null, 2));
+
+        // Fill Form
+        console.log('Filling form...');
+        await fillForm(page, schema, answers);
+
+        // Take screenshot after filling
+        await page.screenshot({ path: `/app/screenshots/${jobId}_filled.png` }).catch(() => { });
+
+        // Submit (Optional - be careful with auto-submit in dev)
+        // await submitForm(page, schema);
+      } catch (error) {
+        console.error('Failed to generate answers or fill form:', error);
+      }
+    }
 
     // Update job with scraped data
     await client.query(
