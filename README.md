@@ -23,52 +23,43 @@ At the core of DeepApply is **Grok 4.1 Fast (Reasoning)**. I selected this model
 -   **Traceability**: Every action, answer, and form submission is logged. Screenshots are captured at key steps.
 
 ## Architecture
+## 📚 Documentation
 
-DeepApply is built as a set of microservices orchestrated by Docker Compose:
+- [**Architecture Overview**](docs/ARCHITECTURE.md) - Modular Monolith + Worker design
+- [**Implementation Plan**](docs/IMPLEMENTATION_PLAN.md) - Current status and roadmap
+- [**Migration Summary**](docs/MODULAR_MONOLITH_MIGRATION.md) - Details on the recent refactor
+- [**Explanations**](docs/Explanations.md) - Deep dive into system components
+- [**Fix Later**](docs/Fix_Later.md) - Technical debt and future improvements
 
--   **frontend**: React + TypeScript + Vite SPA for managing jobs and viewing status.
--   **backend**: Node.js + Fastify API that acts as the orchestrator. It manages the job queue and integrates with the LLM.
--   **agent**: Python + FastAPI service using `browser-use` and `langchain` for autonomous job applications.
--   **postgres**: The primary database, utilizing pgvector for storing text embeddings and relational data.
--   **qdrant**: Vector database for the Agent's knowledge base.
--   **redis**: Handles the job queues and inter-service messaging.
--   **kdb**: A high-performance time-series database used as the Salary Oracle.
--   **telegram-bot**: A simple interface to forward URLs from Telegram to the backend.
+## 🏗️ Architecture
 
-## Getting Started
+DeepApply uses a **Modular Monolith + Worker** architecture:
+
+1.  **Backend** (`services/backend`): Node.js modular monolith (API, Telegram, Queues)
+2.  **Agent** (`services/agent`): Python worker (Browser Automation, RAG)
+3.  **Frontend** (`services/frontend`): React SPA
+4.  **Infrastructure**: Postgres, Redis, Qdrant
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
--   Docker and Docker Compose
--   Node.js (optional, for local script execution)
--   API Keys:
-    -   Grok API Key
-    -   OpenAI API Key
+- Docker & Docker Compose
+- Node.js 20+ (for local dev)
+- Python 3.12+ (for local dev)
+- API Keys: `GROK_API_KEY`, `OPENAI_API_KEY`
 
-### Installation
+### Quick Start
 
-1.  **Clone the Repository**
+1.  **Clone the repository**
     ```bash
     git clone https://github.com/JanKonradK/DeepApply.git
     cd DeepApply
     ```
 
 2.  **Configure Environment**
-    Copy the example environment file and add your keys.
     ```bash
     cp .env.example .env
-    # Edit .env and add:
-    # GROK_API_KEY, OPENAI_API_KEY, AGENT_MODEL, EMBEDDING_MODEL
-    ```
-
-3.  **Setup Profile Data**
-    -   **For Backend (Postgres)**: Create `profile_data` directory and add your documents.
-    -   **For Agent (Qdrant)**: Add your documents to `knowledge_base/obsidian_vault`.
-    ```bash
-    mkdir profile_data
-    mkdir -p knowledge_base/obsidian_vault
-    # Add your files, e.g., bio.txt, experience.md
-    ```
 
 4.  **Ingest Data**
     -   **Backend**:
