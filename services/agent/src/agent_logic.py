@@ -24,33 +24,30 @@ class DeepApplyAgent:
         agent = Agent(
             task=task,
             llm=self.llm,
-            # You might want to pass the browser context or other options here
         )
 
-        # Run the agent with cost tracking
+        # Run the agent with cost tracking using LangChain callbacks
         try:
-            # Browser-use history might contain usage info, but for now we'll rely on the result structure
-            # or wrap the LLM if needed. Since browser-use abstracts the loop, we check the history.
-            history = await agent.run()
-            result = history.final_result()
+            from langchain.callbacks import get_openai_callback
 
-            # Mock cost calculation for now as browser-use 0.9.x might not expose granular token usage easily in the history object yet.
-            # In a real scenario with LangChain, we'd use get_openai_callback context manager, but Agent.run() is async and internal.
-            # We will estimate based on typical usage or check if history has metadata.
-            # For this implementation, we'll return a placeholder structure that the backend expects.
+            # Use callback context to track token usage
+            with get_openai_callback() as cb:
+                history = await agent.run()
+                result = history.final_result()
 
-            # TODO: Implement precise token counting via LangChain callbacks when browser-use supports passing them through.
-            # For now, we assume a fixed cost or estimate.
-            estimated_cost = 0.05 # Placeholder $0.05
-            tokens_in = 1000
-            tokens_out = 200
+                # Extract actual token usage from callback
+                tokens_in = cb.prompt_tokens
+                tokens_out = cb.completion_tokens
+                total_cost = cb.total_cost
+
+                print(f"✓ Application completed. Tokens: {tokens_in} in, {tokens_out} out. Cost: ${total_cost:.4f}")
 
             return {
                 "output": result,
-                "cost_usd": estimated_cost,
+                "cost_usd": total_cost,
                 "tokens_input": tokens_in,
                 "tokens_output": tokens_out
             }
         except Exception as e:
-            print(f"Error running agent: {e}")
+            print(f"❌ Error running agent: {e}")
             return {"error": str(e), "cost_usd": 0, "tokens_input": 0, "tokens_output": 0}

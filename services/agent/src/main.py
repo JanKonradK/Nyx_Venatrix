@@ -13,11 +13,21 @@ class JobRequest(BaseModel):
 
 @app.on_event("startup")
 async def startup_event():
+    # Validate required environment variables
+    required_vars = ['GROK_API_KEY', 'AGENT_MODEL']
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    if missing_vars:
+        print(f"❌ Missing required environment variables: {', '.join(missing_vars)}")
+        print("Please check your .env file and ensure all required variables are set.")
+        raise RuntimeError(f"Missing environment variables: {missing_vars}")
+    print("✓ All required environment variables validated")
+
     # Initialize RAG on startup (Load PyTorch model)
     print("Loading Embedding Model (MiniLM-L6)...")
     global kb
     kb = KnowledgeBase()
     print("Model Loaded")
+
 
 @app.post("/apply")
 async def apply_to_job(job: JobRequest):

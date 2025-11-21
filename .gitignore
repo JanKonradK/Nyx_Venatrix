@@ -12,9 +12,9 @@ services/*/coverage
 *.log
 
 # Documentation (developer notes)
-Fix_Later.md
-IMPLEMENTATION_PLAN.md
-Explanations.md
+#Fix_Later.md
+#IMPLEMENTATION_PLAN.md
+#Explanations.md
 
 # Git housekeeping
 .git/gc.log
