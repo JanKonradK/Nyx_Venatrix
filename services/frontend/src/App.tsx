@@ -10,6 +10,7 @@ interface Job {
     company_name?: string;
     status: 'queued' | 'in_progress' | 'applied' | 'failed' | 'skipped';
     created_at: string;
+    cost_usd?: number;
 }
 
 function App() {
@@ -72,6 +73,34 @@ function App() {
                     </h1>
                     <p className="text-xl text-muted">Autonomous Job Application Agent</p>
                 </header>
+
+                {/* Analytics Section */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+                >
+                    <div className="glass-panel p-4 text-center">
+                        <h3 className="text-sm text-muted uppercase tracking-wider">Total Spent</h3>
+                        <p className="text-2xl font-bold text-green-400">
+                            ${jobs.reduce((acc, job) => acc + (Number(job.cost_usd) || 0), 0).toFixed(3)}
+                        </p>
+                    </div>
+                    <div className="glass-panel p-4 text-center">
+                        <h3 className="text-sm text-muted uppercase tracking-wider">Applications</h3>
+                        <p className="text-2xl font-bold text-blue-400">
+                            {jobs.filter(j => j.status === 'applied').length}
+                        </p>
+                    </div>
+                    <div className="glass-panel p-4 text-center">
+                        <h3 className="text-sm text-muted uppercase tracking-wider">Avg Cost/App</h3>
+                        <p className="text-2xl font-bold text-purple-400">
+                            ${(jobs.filter(j => j.status === 'applied').length > 0
+                                ? jobs.reduce((acc, job) => acc + (Number(job.cost_usd) || 0), 0) / jobs.filter(j => j.status === 'applied').length
+                                : 0).toFixed(3)}
+                        </p>
+                    </div>
+                </motion.div>
 
                 {/* Input Section */}
                 <motion.div

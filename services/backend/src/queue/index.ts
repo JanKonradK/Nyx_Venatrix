@@ -1,4 +1,9 @@
 import { Job, Queue, Worker } from 'bullmq';
+import { Pool } from 'pg';
+
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL
+});
 
 const connection = {
     host: process.env.REDIS_HOST || 'localhost',
@@ -44,6 +49,22 @@ export const setupWorker = () => {
 
             const result = await response.json();
             console.log(`Agent response for job ${job.id}:`, result);
+
+            // Update job with cost data
+            const client = await pool.connect();
+            try {
+                await client.query(
+                    `UPDATE jobs
+                     SET status = 'applied',
+                         cost_usd = $1,
+                         tokens_input = $2,
+                         tokens_output = $3
+                     WHERE id = $4`,
+                    [result.cost_usd || 0, result.tokens_input || 0, result.tokens_output || 0, job.id]
+                );
+            } finally {
+                client.release();
+            }
 
         } catch (error: any) {
             console.error(`Failed to process job ${job.id} via agent:`, error.message);

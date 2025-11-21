@@ -24,8 +24,13 @@ CREATE TABLE IF NOT EXISTS jobs (
   requires_manual BOOLEAN DEFAULT false,
   manual_reason  TEXT,
 
-  status         TEXT NOT NULL DEFAULT 'queued'
+  status         TEXT NOT NULL DEFAULT 'queued',
                  -- 'queued', 'skipped', 'in_progress', 'applied', 'failed', 'manual_only'
+
+  -- Analytics
+  cost_usd       NUMERIC DEFAULT 0,
+  tokens_input   INT DEFAULT 0,
+  tokens_output  INT DEFAULT 0
 );
 
 -- Embeddings Table (for RAG)
