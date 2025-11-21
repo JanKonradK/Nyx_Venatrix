@@ -165,3 +165,5 @@ websockets==15.0.1
 xxhash==3.6.0
 yarl==1.22.0
 zstandard==0.25.0
+pytest==8.0.0
+pytest-asyncio==0.23.0
