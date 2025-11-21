@@ -42,7 +42,7 @@ export class TelegramBot {
 
         // Handle URLs
         this.bot.on('text', async (ctx: Context) => {
-            if (!('text' in ctx.message)) return;
+            if (!ctx.message || !('text' in ctx.message)) return;
             const text = ctx.message.text;
 
             // Simple URL detection

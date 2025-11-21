@@ -2,9 +2,24 @@
 
 This document provides a comprehensive overview of the DeepApply system, detailing the architecture, data flow, and the purpose of each component. It serves as a guide for developers and stakeholders to understand the "why" and "how" of the project.
 
-## System Architecture
+## System## Architecture Overview
 
-DeepApply follows a **Microservices Architecture** orchestrated via Docker Compose. This ensures modularity, scalability, and isolation of concerns.
+DeepApply uses a **Modular Monolith + Worker** architecture:
+
+1.  **Backend (Modular Monolith)**: Node.js service that handles:
+    -   API for Frontend
+    -   Embedded Telegram Bot
+    -   Job Queue Orchestration
+    -   LLM Integration (Grok/OpenAI)
+    -   Database Management
+2.  **Agent (Worker)**: Python service for:
+    -   Browser Automation (Playwright)
+    -   ML/RAG Logic
+    -   Job Application Execution
+3.  **Frontend**: React SPA (Vite)
+4.  **Infrastructure**: Postgres (Data), Redis (Queues), Qdrant (Vector DB)
+
+This architecture simplifies deployment and maintenance while keeping the heavy AI/Browser logic isolated in a dedicated Python worker.
 
 ### 1. Frontend (`services/frontend`)
 -   **Tech Stack**: React, TypeScript, Vite, TailwindCSS, Framer Motion.

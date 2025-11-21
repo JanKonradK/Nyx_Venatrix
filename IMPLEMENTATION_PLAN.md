@@ -1,10 +1,16 @@
 # DeepApply Implementation & A/B Testing Plan
 
+## Current Status: ✅ Modular Monolith Architecture Complete
+
+The project has been successfully refactored from microservices to a **Modular Monolith + Worker** architecture.
+- **Backend**: Node.js Modular Monolith (API, Telegram, Queues, LLM)
+- **Agent**: Python Worker (Browser Automation, RAG)
+- **Infrastructure**: Postgres, Redis, Qdrant
+
+All core features are implemented and functional.
+
 This document outlines the steps to deploy and test the new Agent-based architecture (Plan B) vs the legacy Browser-Worker architecture (Plan A).
 
-## Current State (Plan B - Active)
-
-The system is currently configured to use the **Python Agent** (`services/agent`) for job applications.
 - **Backend**: Delegates job processing to the Agent service via HTTP.
 - **Agent**: Uses `browser-use` and `langchain` with Grok 4.1 Fast to autonomously navigate and apply.
 - **Browser Worker**: Currently disabled in `docker-compose.yml`.
