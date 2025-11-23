@@ -7,7 +7,8 @@
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
-    "ingest": "ts-node scripts/ingest_profile.ts"
+    "ingest": "ts-node scripts/ingest_profile.ts",
+    "test:integration": "ts-node tests/integration_flow.test.ts"
   },
   "dependencies": {
     "@fastify/cors": "^8.3.0",
@@ -15,8 +16,9 @@
     "bullmq": "^5.36.3",
     "dotenv": "^16.3.1",
     "fastify": "^4.24.3",
+    "node-pg-migrate": "^8.0.3",
     "openai": "^4.80.0",
-    "pg": "^8.11.3",
+    "pg": "^8.16.3",
     "telegraf": "^4.16.3"
   },
   "devDependencies": {

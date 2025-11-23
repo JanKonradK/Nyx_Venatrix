@@ -29,11 +29,11 @@ This file tracks temporary implementations, hardcoded values, and items that nee
 
 ## 📝 Nice-to-Have Improvements
 
-- Add integration tests for the full job application flow (backend → agent → database)
+- [x] Add integration tests for the full job application flow (backend → agent → database)
 ~~Implement retries with exponential backoff for failed agent runs~~ **FIXED**: Added exponential backoff in agent_logic.py
 - ~~Add Prometheus metrics collection for observability (see MONITORING.md)~~ **FIXED**: Implemented /metrics endpoint in Agent service
-- Consider implementing a circuit breaker pattern for agent service calls
-- Add database migrations framework (e.g., `node-pg-migrate`)
-- Implement profile management domain module (domain/profile)
-- Add application lifecycle tracking (domain/application)
-- Adding proper A/B tests for all functions of the system
+- [x] Consider implementing a circuit breaker pattern for agent service calls
+- [x] Add database migrations framework (e.g., `node-pg-migrate`)
+- [x] Implement profile management domain module (domain/profile)
+- [x] Add application lifecycle tracking (domain/application)
+- [x] Adding proper A/B tests for all functions of the system
