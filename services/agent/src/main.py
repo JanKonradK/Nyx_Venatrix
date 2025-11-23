@@ -1,11 +1,19 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel
 import os
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 
 from .agent_logic import DeepApplyAgent
 from .rag_engine import KnowledgeBase
 
 app = FastAPI(title="DeepApply Agent API")
+
+# Metrics
+AGENT_RUNS = Counter('agent_runs_total', 'Total number of agent runs')
+AGENT_ERRORS = Counter('agent_errors_total', 'Total number of agent errors')
+AGENT_TOKENS = Counter('agent_tokens_total', 'Total tokens used', ['type']) # type: input, output
+AGENT_COST = Counter('agent_cost_usd_total', 'Total cost in USD')
+AGENT_DURATION = Histogram('agent_duration_seconds', 'Time spent running the agent')
 
 class JobRequest(BaseModel):
     url: str
@@ -34,9 +42,24 @@ async def apply_to_job(job: JobRequest):
     """
     Trigger the agent to apply for a job.
     """
-    agent = DeepApplyAgent(kb=kb)
-    result = await agent.run(job.url)
-    return {"status": "success", "data": result}
+    AGENT_RUNS.inc()
+    with AGENT_DURATION.time():
+        try:
+            agent = DeepApplyAgent(kb=kb)
+            result = await agent.run(job.url)
+
+            # Record metrics
+            if "tokens_input" in result:
+                AGENT_TOKENS.labels(type='input').inc(result["tokens_input"])
+            if "tokens_output" in result:
+                AGENT_TOKENS.labels(type='output').inc(result["tokens_output"])
+            if "cost_usd" in result:
+                AGENT_COST.inc(result["cost_usd"])
+
+            return {"status": "success", "data": result}
+        except Exception as e:
+            AGENT_ERRORS.inc()
+            raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/ingest")
 async def ingest_data():
@@ -48,6 +71,10 @@ async def ingest_data():
         return {"status": "success", "message": "Ingestion complete"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/metrics")
+def metrics():
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 @app.get("/health")
 def health():

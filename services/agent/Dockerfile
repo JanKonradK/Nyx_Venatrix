@@ -1,5 +1,5 @@
-# Use 3.11 or 3.12. 3.14 is too new for reliable ML wheels right now.
-FROM python:3.11-slim
+# Using Python 3.13 for latest features and performance improvements
+FROM python:3.13-slim
 
 WORKDIR /app
 
