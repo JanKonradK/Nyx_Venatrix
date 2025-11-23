@@ -102,8 +102,7 @@ services:
     depends_on:
       - qdrant
     volumes:
-      - ./services/agent:/app
-      - ./knowledge_base/obsidian_vault:/app/vault
+      - ./profile_data:/app/profile_data
     networks:
       - deepapply_net
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload

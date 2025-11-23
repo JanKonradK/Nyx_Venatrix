@@ -11,8 +11,10 @@ class DeepApplyAgent:
         self.llm = ChatOpenAI(
             base_url='https://api.grok.x.ai/v1',
             api_key=os.getenv('GROK_API_KEY'),
-            model=os.getenv('AGENT_MODEL', 'grok-beta')
+            model=os.getenv('AGENT_MODEL', 'grok-beta'),
+            max_tokens=int(os.getenv('MAX_TOKENS_PER_QUESTION', 1024)) # Limit output tokens per question
         )
+        self.max_app_tokens = int(os.getenv('MAX_TOKENS_PER_APP', 10000))
 
     async def run(self, url: str):
         print(f"Starting application process for: {url}")
@@ -41,6 +43,9 @@ class DeepApplyAgent:
                 total_cost = cb.total_cost
 
                 print(f"✓ Application completed. Tokens: {tokens_in} in, {tokens_out} out. Cost: ${total_cost:.4f}")
+
+                if tokens_out > self.max_app_tokens:
+                     print(f"⚠️ Warning: Application exceeded token limit ({tokens_out} > {self.max_app_tokens})")
 
             return {
                 "output": result,

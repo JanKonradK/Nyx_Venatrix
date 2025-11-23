@@ -44,7 +44,7 @@ async def ingest_data():
     Trigger ingestion of documents from the vault.
     """
     try:
-        kb.ingest_vault()
+        kb.ingest_profile_data()
         return {"status": "success", "message": "Ingestion complete"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

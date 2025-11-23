@@ -1,103 +1,95 @@
-# DeepApply
+# DeepApply: Autonomous Browser Instrumentation & Inference Framework
 
-**The Local-First, Autonomous AI Agent for Job Applications.**
+<div align="center">
 
-DeepApply is a Dockerized system designed to automate the process of applying for jobs. It accepts job URLs, intelligently fills out applications using your personal profile data, and manages the lifecycle of your job search. It runs locally on your machine for privacy and control.
+![DeepApply Logo](https://via.placeholder.com/150)
 
-## Powered by Grok 4.1 Fast
+**A High-Throughput, Event-Driven Architecture for Autonomous Agentic Workflows.**
 
-At the core of DeepApply is **Grok 4.1 Fast (Reasoning)**. I selected this model for three reasons:
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![Node.js](https://img.shields.io/badge/node-20+-green.svg)](https://nodejs.org/)
+[![Docker](https://img.shields.io/badge/docker-compose-blue.svg)](https://www.docker.com/)
 
-1.  **Reasoning**: Unlike standard chat models, Grok 4.1 Fast excels at decision-making, allowing it to understand nuanced application questions and generate tailored answers.
-2.  **Tool Calling**: The model is reliable in calling external tools. This is vital for DeepApply, which relies on the LLM to query the Salary Oracle, search your RAG vector database, and control browser actions.
-3.  **Cost**: It provides high performance at a fraction of the cost of other reasoning models, making high-volume automated applications viable.
+</div>
 
-## Key Features
+DeepApply is a containerized, modular monolith designed to orchestrate complex, multi-step browser interactions through autonomous agents. It leverages a local-first vector database for Retrieval-Augmented Generation (RAG) and utilizes advanced Large Language Models (LLMs) for heuristic decision-making and semantic analysis of unstructured web data.
 
--   **Local-First Architecture**: Your data (CVs, personal info, application history) stays on your machine in a local PostgreSQL database.
--   **RAG (Retrieval-Augmented Generation)**: The agent reads your CV, bio, and previous work experiences (stored as embeddings) to answer specific questions like "Describe a challenge you overcame."
--   **Intelligent Form Filling**: Uses a headless browser (Playwright) with stealth plugins to navigate job sites, extract form schemas, and fill them out.
--   **Salary Oracle**: A specialized kdb+/q microservice that provides quantitative salary estimations so you don't lowball yourself.
--   **Multi-Platform Support**: Designed to handle various ATS platforms and job boards.
--   **Telegram Integration**: Send job links directly to your agent via a Telegram bot.
--   **Traceability**: Every action, answer, and form submission is logged. Screenshots are captured at key steps.
+## 🔬 Core Technologies & Paradigms
 
-## Architecture
-## 📚 Documentation
+-   **Autonomous AI Agents**: Implements self-correcting, goal-oriented agents capable of navigating dynamic DOM structures and executing complex workflows without human intervention.
+-   **Retrieval-Augmented Generation (RAG)**: Utilizes a high-dimensional vector space (Qdrant) to semantically index and retrieve context-aware data, minimizing hallucination and maximizing inference accuracy.
+-   **Inference Engine Agnosticism**: While optimized for **Grok 4.1 Fast (Reasoning)** for its superior chain-of-thought capabilities and tool-use reliability, the architecture supports plug-and-play integration with any OpenAI-compatible LLM endpoint.
+-   **Browser Instrumentation & Fingerprint Normalization**: Deploys headless browser instances (Playwright) with advanced user-agent normalization and fingerprint management to ensure consistent, undetectable interaction with target web properties.
+-   **Event-Driven Architecture**: Decouples microservices via a Redis-backed message queue, ensuring high availability, fault tolerance, and scalable throughput for asynchronous task processing.
+-   **Quantitative Heuristics**: Integrates a kdb+/q microservice for real-time statistical modeling and quantitative estimation, providing data-driven constraints for agent decision logic.
 
-- [**Architecture Overview**](docs/ARCHITECTURE.md) - Modular Monolith + Worker design
-- [**Implementation Plan**](docs/IMPLEMENTATION_PLAN.md) - Current status and roadmap
-- [**Migration Summary**](docs/MODULAR_MONOLITH_MIGRATION.md) - Details on the recent refactor
-- [**Explanations**](docs/Explanations.md) - Deep dive into system components
-- [**Fix Later**](docs/Fix_Later.md) - Technical debt and future improvements
+## 🏗️ System Architecture
 
-## 🏗️ Architecture
+The system follows a **Modular Monolith + Worker** pattern, ensuring separation of concerns while maintaining development velocity:
 
-DeepApply uses a **Modular Monolith + Worker** architecture:
+1.  **Orchestration Layer** (`services/backend`): Node.js-based API gateway and event dispatcher, managing state persistence and queue telemetry.
+2.  **Inference & Execution Worker** (`services/agent`): Python-based autonomous worker handling DOM manipulation, RAG pipeline execution, and LLM reasoning loops.
+3.  **Observability Dashboard** (`services/frontend`): React-based SPA for real-time monitoring of agent state, queue depth, and inference logs.
+4.  **Persistence Layer**:
+    -   **PostgreSQL**: Relational state management.
+    -   **Redis**: Ephemeral message brokering.
+    -   **Qdrant**: Vector similarity search engine.
 
-1.  **Backend** (`services/backend`): Node.js modular monolith (API, Telegram, Queues)
-2.  **Agent** (`services/agent`): Python worker (Browser Automation, RAG)
-3.  **Frontend** (`services/frontend`): React SPA
-4.  **Infrastructure**: Postgres, Redis, Qdrant
+### Vector Space Organization (`profile_data/`)
+Data is ingested into a hierarchical vector store to optimize semantic retrieval precision:
+-   `CVs/`: High-priority biographical embeddings.
+-   `Professional_Info/`: Chronological employment vectors.
+-   `Academic_Info/`: Educational credential embeddings.
+-   `Personal_Info/`: Unstructured semantic context.
+-   `Other_Info/`: Auxiliary data points.
 
-## 🚀 Getting Started
+## 🚀 Deployment & Instantiation
 
 ### Prerequisites
 
-- Docker & Docker Compose
-- Node.js 20+ (for local dev)
-- Python 3.12+ (for local dev)
-- API Keys: `GROK_API_KEY`, `OPENAI_API_KEY`
+-   Docker Engine & Docker Compose (v2.0+)
+-   Node.js 20+ (LTS)
+-   Python 3.12+
+-   LLM API Credentials (`GROK_API_KEY`, `OPENAI_API_KEY`)
 
-### Quick Start
+### Initialization Sequence
 
-1.  **Clone the repository**
+1.  **Repository Cloning**
     ```bash
     git clone https://github.com/JanKonradK/DeepApply.git
     cd DeepApply
     ```
 
-2.  **Configure Environment**
+2.  **Environment Configuration**
     ```bash
     cp .env.example .env
+    # Configure API keys and hyper-parameters
+    ```
 
-4.  **Ingest Data**
-    -   **Backend**:
-        ```bash
-        docker-compose up -d postgres
-        cd services/backend && npm install && npm run ingest
-        cd ../..
-        ```
-    -   **Agent**:
-        Start the services first, then trigger ingestion.
-        ```bash
-        docker-compose up -d
-        curl -X POST http://localhost:8000/ingest
-        ```
+3.  **Data Ingestion Pipeline**
+    Populate the `profile_data/` directory with unstructured text corpora.
+    ```bash
+    docker-compose up -d
+    # Trigger vector embedding pipeline
+    curl -X POST http://localhost:8000/ingest
+    ```
 
-5.  **Run the System**
+4.  **System Startup**
     ```bash
     docker-compose up --build
     ```
 
-## Usage
+## 📚 Documentation
 
-1.  **Access the Dashboard**: Open http://localhost:5173 in your browser.
-2.  **Submit a Job**: Paste a URL (e.g., from LinkedIn or a company careers page) into the input box.
-3.  **Watch it Work**:
-    -   The job is queued.
-    -   The Browser Worker launches a stealth browser.
-    -   It scrapes the page and extracts the form fields.
-    -   Grok 4.1 Fast analyzes the form and your profile data to generate answers.
-    -   The worker fills the form and saves a screenshot (check `services/browser-worker/screenshots`).
+Detailed technical specifications are available for internal review:
+-   [**Architecture Overview**](docs/ARCHITECTURE.md)
+-   [**Contributing**](CONTRIBUTING.md)
 
-## Development
+## 🤝 Contribution
 
--   **Backend**: `services/backend`
--   **Frontend**: `services/frontend`
--   **Worker**: `services/browser-worker`
--   **Database**: `infrastructure/postgres`
+We welcome PRs from engineers interested in advancing the state of autonomous web agents. Please review [CONTRIBUTING.md](CONTRIBUTING.md) for code standards and linting rules.
 
-## License
+## 📄 License
 
 MIT License.
