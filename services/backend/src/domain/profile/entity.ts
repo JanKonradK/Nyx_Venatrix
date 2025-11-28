@@ -26,10 +26,23 @@ export interface Education {
     year: number;
 }
 
+import { SalaryFetcher } from '../../integrations/kdb/salary_fetcher';
+
 export class ProfileService {
+    private salaryFetcher: SalaryFetcher;
+
+    constructor() {
+        this.salaryFetcher = new SalaryFetcher();
+    }
+
     // Placeholder for profile management logic
     async getProfile(userId: string): Promise<Profile | null> {
         // TODO: Fetch from DB
+
+        // Example of using the KDB+ salary fetcher to enrich data
+        // const benchmark = await this.salaryFetcher.getBenchmark('Software Engineer');
+        // console.log(`Market Benchmark: ${benchmark.median}`);
+
         return null;
     }
 

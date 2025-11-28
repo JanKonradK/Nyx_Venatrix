@@ -2,6 +2,7 @@ import os
 from browser_use import Agent
 from langchain_openai import ChatOpenAI
 from .rag_engine import KnowledgeBase
+from .definitions import UserProfile, SYSTEM_PROMPT_TEMPLATE
 
 class DeepApplyAgent:
     def __init__(self, kb: KnowledgeBase = None):
@@ -12,19 +13,22 @@ class DeepApplyAgent:
             base_url='https://api.grok.x.ai/v1',
             api_key=os.getenv('GROK_API_KEY'),
             model=os.getenv('AGENT_MODEL', 'grok-beta'),
-            max_tokens=int(os.getenv('MAX_TOKENS_PER_QUESTION', 1024)) # Limit output tokens per question
+            max_tokens=int(os.getenv('MAX_TOKENS_PER_QUESTION', 512)) # Limit output tokens per question
         )
-        self.max_app_tokens = int(os.getenv('MAX_TOKENS_PER_APP', 10000))
+        self.max_app_tokens = int(os.getenv('MAX_TOKENS_PER_APP', 7000))
 
-    async def run(self, url: str):
+    async def run(self, url: str, user_profile: UserProfile):
         print(f"Starting application process for: {url}")
 
-        # Construct the task with context if available
-        task = f"Navigate to {url}. Detect the job application form. Fill out the fields using the user's profile information. Submit the application if possible, or stop before the final submit if unsure."
+        # Construct the task with explicit context
+        formatted_task = SYSTEM_PROMPT_TEMPLATE.format(
+            user_profile_json=user_profile.model_dump_json(indent=2),
+            target_url=url
+        )
 
         # Create the agent
         agent = Agent(
-            task=task,
+            task=formatted_task,
             llm=self.llm,
         )
 

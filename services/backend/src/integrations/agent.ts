@@ -4,9 +4,20 @@
 
 import axios from 'axios';
 
+export interface UserProfile {
+    full_name: string;
+    email: string;
+    phone: string;
+    linkedin_url?: string;
+    portfolio_url?: string;
+    skills: string[];
+    salary_expectation: string;
+}
+
 export interface AgentJobRequest {
     url: string;
     keywords?: string[];
+    profile: UserProfile;
 }
 
 export interface AgentJobResponse {
