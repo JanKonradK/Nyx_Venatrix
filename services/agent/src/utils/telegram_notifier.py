@@ -74,13 +74,71 @@ You have {timeout_seconds // 60} minutes to respond.
         if screenshot_path:
             await self.send_screenshot(screenshot_path, caption=issue_type)
 
-        # In a full implementation, this would listen for Telegram updates
-        # For now, we return a timeout response
-        print(f"⏳ Waiting {timeout_seconds}s for user response...")
-        await asyncio.sleep(timeout_seconds)
+        # Listen for user response
+        response = await self.wait_for_user_reply(timeout_seconds)
 
-        # TODO: Implement actual listener for user responses
-        return {"action": "skip", "data": None}
+        if response:
+            action = response.lower().strip()
+            if action in ["continue", "proceed", "go", "yes"]:
+                return {"action": "continue", "data": response}
+            elif action in ["skip", "next"]:
+                return {"action": "skip", "data": response}
+            elif action in ["abort", "stop", "cancel"]:
+                return {"action": "abort", "data": response}
+            else:
+                # Default to continue for any other response
+                return {"action": "continue", "data": response}
+        else:
+            # Timeout - default to skip
+            await self.send_message("⏱️ No response received. Skipping this application.")
+            return {"action": "skip", "data": None}
+
+    async def wait_for_user_reply(self, timeout_seconds: int = 300) -> Optional[str]:
+        """
+        Wait for user to reply via Telegram.
+        Polls the Telegram API for new messages.
+        """
+        if not self.bot:
+            return None
+
+        print(f"⏳ Listening for Telegram reply (timeout: {timeout_seconds}s)...")
+
+        # Get current update ID to ignore old messages
+        try:
+            updates = await self.bot.get_updates(limit=1)
+            last_update_id = updates[0].update_id if updates else 0
+        except Exception:
+            last_update_id = 0
+
+        start_time = asyncio.get_event_loop().time()
+
+        while (asyncio.get_event_loop().time() - start_time) < timeout_seconds:
+            try:
+                # Poll for new updates
+                updates = await self.bot.get_updates(
+                    offset=last_update_id + 1,
+                    timeout=10,
+                    allowed_updates=["message"]
+                )
+
+                for update in updates:
+                    last_update_id = update.update_id
+
+                    # Check if message is from our chat
+                    if update.message and str(update.message.chat.id) == str(self.chat_id):
+                        reply_text = update.message.text
+                        print(f"📩 Received reply: '{reply_text}'")
+                        return reply_text
+
+                # Wait a bit before next poll
+                await asyncio.sleep(2)
+
+            except Exception as e:
+                print(f"⚠️ Error polling Telegram: {e}")
+                await asyncio.sleep(5)
+
+        print("❌ Timeout waiting for Telegram reply")
+        return None
 
     async def notify_completion(self, job_title: str, status: str):
         """Notify user of application completion."""
