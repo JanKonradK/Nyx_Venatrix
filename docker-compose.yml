@@ -7,23 +7,23 @@ services:
 
   postgres:
     image: pgvector/pgvector:pg16
-    container_name: deepapply_postgres
+    container_name: nyx_venatrix_postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-deepapply}
+      POSTGRES_DB: ${POSTGRES_DB:-nyx_venatrix}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./infrastructure/postgres:/docker-entrypoint-initdb.d
     networks:
-      - deepapply_net
+      - nyx_venatrix_net
     restart: unless-stopped
 
   redis:
     image: redis:alpine
-    container_name: deepapply_redis
+    container_name: nyx_venatrix_redis
     ports:
       - "6379:6379"
     volumes:
@@ -34,7 +34,7 @@ services:
 
   qdrant:
     image: qdrant/qdrant
-    container_name: deepapply_qdrant
+    container_name: nyx_venatrix_qdrant
     ports:
       - "6333:6333"
     volumes:
@@ -57,10 +57,10 @@ services:
   # - Agent service coordination
   backend:
     build: ./services/backend
-    container_name: deepapply_backend
+    container_name: nyx_venatrix_backend
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-deepapply}
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-nyx_venatrix}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - GROK_API_KEY=${GROK_API_KEY}
@@ -90,12 +90,12 @@ services:
   # - Knowledge base (Qdrant)
   agent:
     build: ./services/agent
-    container_name: deepapply_agent
+    container_name: nyx_venatrix_agent
     environment:
       - GROK_API_KEY=${GROK_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - AGENT_MODEL=${AGENT_MODEL:-grok-beta}
-      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-deepapply}
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-nyx_venatrix}
       - QDRANT_URI=http://qdrant:6333
     ports:
       - "8000:8000"
@@ -111,7 +111,7 @@ services:
   # (Could be served from backend in production, but separate for dev convenience)
   frontend:
     build: ./services/frontend
-    container_name: deepapply_frontend
+    container_name: nyx_venatrix_frontend
     environment:
       - VITE_API_URL=http://localhost:3000
     ports:
@@ -130,9 +130,9 @@ services:
   # Analytics Service (Optional - can be folded into backend if needed)
   analytics:
     build: ./services/analytics
-    container_name: deepapply_analytics
+    container_name: nyx_venatrix_analytics
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-deepapply}
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-nyx_venatrix}
     ports:
       - "8001:8001"
     depends_on:
@@ -146,7 +146,7 @@ services:
   # KDB Salary Oracle (Optional)
   kdb:
     image: registry.hub.docker.com/dataintel/kdb:latest
-    container_name: deepapply_kdb
+    container_name: nyx_venatrix_kdb
     ports:
       - "5000:5000"
     volumes:
@@ -160,7 +160,7 @@ services:
       - kdb
 
 networks:
-  deepapply_net:
+  nyx_venatrix_net:
     driver: bridge
 
 volumes:

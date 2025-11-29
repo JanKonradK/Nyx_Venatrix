@@ -1,10 +1,10 @@
-# DeepApply: Autonomous Browser Instrumentation & Inference Framework
+# Nyx Venatrix: Autonomous Web Agent & Intelligence Framework
 
 <div align="center">
 
-![DeepApply Logo](https://via.placeholder.com/150)
+![Nyx Venatrix Logo](https://via.placeholder.com/150)
 
-**A High-Throughput, Event-Driven Architecture for Autonomous Agentic Workflows.**
+**"Works in darkness to generate opportunity."**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
@@ -13,7 +13,7 @@
 
 </div>
 
-DeepApply is a containerized, modular monolith designed to orchestrate complex, multi-step browser interactions through autonomous agents. It leverages a local-first vector database for Retrieval-Augmented Generation (RAG) and utilizes advanced Large Language Models (LLMs) for heuristic decision-making and semantic analysis of unstructured web data.
+**Nyx Venatrix** (Nyx: Goddess of Night + Venatrix: Huntress) is a containerized, modular monolith designed to orchestrate complex, multi-step browser interactions through autonomous agents. It leverages a local-first vector database for Retrieval-Augmented Generation (RAG) and utilizes advanced Large Language Models (LLMs) for heuristic decision-making and systematic platform interaction.
 
 ## 🔬 Core Technologies & Paradigms
 

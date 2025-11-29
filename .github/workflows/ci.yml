@@ -1,4 +1,4 @@
-name: DeepApply CI
+name: Nyx Venatrix CI
 
 on:
   push:

@@ -6,7 +6,7 @@ from psycopg2.extras import RealDictCursor
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 
-app = FastAPI(title="DeepApply Analytics API")
+app = FastAPI(title="Nyx Venatrix Analytics API")
 
 def get_db_connection():
     return psycopg2.connect(

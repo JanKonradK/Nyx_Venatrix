@@ -1,8 +1,8 @@
-# DeepApply Architecture - Modular Monolith
+# Nyx Venatrix Architecture - Modular Monolith
 
 ## Overview
 
-DeepApply uses a **Modular Monolith + Worker** architecture:
+Nyx Venatrix uses a **Modular Monolith + Worker** architecture:
 - **1 Backend Service** (Node.js) - Orchestrator and API
 - **1 Agent Service** (Python) - Browser automation worker
 - **Infrastructure** (Postgres, Redis, Qdrant) - Datastores

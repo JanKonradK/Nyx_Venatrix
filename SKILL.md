@@ -1,12 +1,12 @@
 ---
-description: Specialized capabilities for the DeepApply agent swarm, enabling parallel execution and role-based specialization.
+description: Specialized capabilities for the Nyx Venatrix agent swarm, enabling parallel execution and role-based specialization.
 globs:
   - services/agent/src/agents/*.py
   - services/agent/src/skills/*.py
 ---
 # Agent Skills & Capabilities
 
-This document defines the specialized skills available to the DeepApply agent swarm.
+This document defines the specialized skills available to the Nyx Venatrix agent swarm.
 
 ## 🧠 Core Capabilities
 

@@ -1,7 +1,7 @@
 {
-  "name": "deepapply-backend",
+  "name": "nyx-venatrix-backend",
   "version": "2.0.0",
-  "description": "DeepApply Backend - Modular Monolith",
+  "description": "Nyx Venatrix Backend",
   "main": "dist/app.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",

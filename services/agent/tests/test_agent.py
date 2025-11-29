@@ -6,7 +6,7 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.agent_logic import DeepApplyAgent
+from src.agent_logic import NyxVenatrixAgent
 
 @pytest.fixture
 def mock_kb():
@@ -19,7 +19,7 @@ def mock_kb():
 def agent(mock_kb):
     """Create agent instance with mocked dependencies."""
     with patch.dict(os.environ, {'GROK_API_KEY': 'test_key', 'AGENT_MODEL': 'grok-beta'}):
-        return DeepApplyAgent(kb=mock_kb)
+        return NyxVenatrixAgent(kb=mock_kb)
 
 @pytest.mark.asyncio
 async def test_agent_initialization(agent):

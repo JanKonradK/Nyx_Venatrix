@@ -1,6 +1,6 @@
 # Backend Service: Orchestration & Lifecycle Management
 
-This service acts as the central nervous system of the DeepApply framework, managing the event loop, state persistence, and the "Lifecycle Pipeline" of the target entities.
+This service acts as the central nervous system of the Nyx Venatrix framework, managing the event loop, state persistence, and the "Lifecycle Pipeline" of the target entities.
 
 ## 🏗️ Architecture
 

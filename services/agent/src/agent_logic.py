@@ -4,7 +4,7 @@ from langchain_openai import ChatOpenAI
 from .rag_engine import KnowledgeBase
 from .agent_prompts import SYSTEM_PROMPT_TEMPLATE
 
-class DeepApplyAgent:
+class NyxVenatrixAgent:
     def __init__(self, kb: KnowledgeBase = None):
         self.kb = kb
         # Initialize LLM

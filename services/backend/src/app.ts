@@ -1,5 +1,5 @@
 /**
- * DeepApply Backend - Modular Monolith
+ * Nyx Venatrix Backend - Modular Monolith
  *
  * Architecture:
  * - Single deployable unit with internal modules
@@ -142,7 +142,7 @@ const start = async () => {
         // Start Telegram bot
         await telegramBot.launch();
 
-        console.log('✅ DeepApply Backend (Modular Monolith) ready!');
+        console.log('✅ Nyx Venatrix Backend ready!');
     } catch (err) {
         fastify.log.error(err);
         process.exit(1);

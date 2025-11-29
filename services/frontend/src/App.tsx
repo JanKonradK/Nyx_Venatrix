@@ -69,7 +69,7 @@ function App() {
             <div className="container">
                 <header className="mb-12 text-center">
                     <h1 className="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-pink-500 animate-float">
-                        DeepApply
+                        Nyx Venatrix
                     </h1>
                     <p className="text-xl text-muted">Autonomous Job Application Agent</p>
                 </header>

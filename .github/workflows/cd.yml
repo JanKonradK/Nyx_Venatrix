@@ -29,7 +29,7 @@ jobs:
       with:
         context: ./services/backend
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/deepapply-backend:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/nyx-venatrix-backend:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -38,7 +38,7 @@ jobs:
       with:
         context: ./services/frontend
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/deepapply-frontend:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/nyx-venatrix-frontend:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -47,7 +47,7 @@ jobs:
       with:
         context: ./services/agent
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/deepapply-agent:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/nyx-venatrix-agent:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -56,7 +56,7 @@ jobs:
       with:
         context: ./services/analytics
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/deepapply-analytics:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/nyx-venatrix-analytics:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 

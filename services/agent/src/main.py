@@ -3,10 +3,10 @@ from pydantic import BaseModel
 import os
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 
-from .agent_logic import DeepApplyAgent
+from .agent_logic import NyxVenatrixAgent
 from .rag_engine import KnowledgeBase
 
-app = FastAPI(title="DeepApply Agent API")
+app = FastAPI(title="Nyx Venatrix Agent API")
 
 # Metrics
 AGENT_RUNS = Counter('agent_runs_total', 'Total number of agent runs')
@@ -47,7 +47,7 @@ async def apply_to_job(job: JobRequest):
     AGENT_RUNS.inc()
     with AGENT_DURATION.time():
         try:
-            agent = DeepApplyAgent(kb=kb)
+            agent = NyxVenatrixAgent(kb=kb)
             result = await agent.run(job.url)
 
             # Record metrics

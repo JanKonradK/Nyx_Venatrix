@@ -28,7 +28,7 @@ export class TelegramBot {
 
         this.bot.start((ctx: Context) => {
             ctx.reply(
-                'Welcome to DeepApply! 🤖\n\n' +
+                'Welcome to Nyx Venatrix! 🤖\n\n' +
                 'Send me a job URL and I\'ll automatically apply for you.\n\n' +
                 'Commands:\n' +
                 '/start - Show this message\n' +
