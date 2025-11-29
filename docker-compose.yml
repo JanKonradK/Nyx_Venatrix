@@ -47,14 +47,7 @@ services:
   # BUSINESS SERVICES
   # ============================================================================
 
-  # Backend - Modular Monolith
-  # Responsibilities:
-  # - HTTP API for frontend
-  # - Telegram bot (embedded)
-  # - Job queue orchestration
-  # - LLM calls (Grok, OpenAI)
-  # - Database operations
-  # - Agent service coordination
+  # Backend - API & Orchestration
   backend:
     build: ./services/backend
     container_name: nyx_venatrix_backend
@@ -82,12 +75,7 @@ services:
       - deepapply_net
     command: npm run dev
 
-  # Agent - Worker Service
-  # Responsibilities:
-  # - Browser automation (Playwright)
-  # - ML/RAG logic
-  # - Form understanding and filling
-  # - Knowledge base (Qdrant)
+  # Agent - Browser Automation & ML Worker
   agent:
     build: ./services/agent
     container_name: nyx_venatrix_agent
@@ -107,8 +95,7 @@ services:
       - deepapply_net
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 
-  # Frontend - Static SPA
-  # (Could be served from backend in production, but separate for dev convenience)
+  # Frontend - React SPA
   frontend:
     build: ./services/frontend
     container_name: nyx_venatrix_frontend

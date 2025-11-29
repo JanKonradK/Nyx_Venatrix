@@ -1,15 +1,15 @@
-# Backend Service: Orchestration & Lifecycle Management
+# Backend Service
 
-This service acts as the central nervous system of the Nyx Venatrix framework, managing the event loop, state persistence, and the "Lifecycle Pipeline" of the target entities.
+Orchestrates the agent pipeline, manages state persistence, and provides HTTP API for frontend and external integrations.
 
-## 🏗️ Architecture
+## Features
 
-The backend is built as a **Modular Monolith** using Node.js and TypeScript. It is designed to be event-driven, decoupling the API layer from the background processing logic.
+- HTTP API for job submissions
+- Embedded Telegram bot
+- Job queue management (BullMQ + Redis)
+- LLM orchestration (Grok, OpenAI)
+- PostgreSQL state management
 
-### Modules
--   **Domain**: Core business logic (Entities, Value Objects).
--   **Infrastructure**: Database adapters (PostgreSQL), Queue adapters (Redis).
--   **API**: REST endpoints for the frontend and external webhooks.
 
 ## 🔄 Lifecycle Pipeline
 

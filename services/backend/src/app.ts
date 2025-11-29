@@ -1,10 +1,6 @@
 /**
- * Nyx Venatrix Backend - Modular Monolith
- *
- * Architecture:
- * - Single deployable unit with internal modules
- * - Integrates Telegram bot, job queue, and agent orchestration
- * - Clean separation of concerns via domain-driven design
+ * Nyx Venatrix Backend
+ * Orchestrates agents, manages state, and exposes HTTP API
  */
 
 import cors from '@fastify/cors';
