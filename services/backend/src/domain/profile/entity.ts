@@ -35,18 +35,28 @@ export class ProfileService {
         this.salaryFetcher = new SalaryFetcher();
     }
 
-    // Placeholder for profile management logic
+    /**
+     * Retrieves a user profile.
+     * Currently returns a mock profile as the database schema for profiles is not yet finalized.
+     */
     async getProfile(userId: string): Promise<Profile | null> {
-        // TODO: Fetch from DB
-
-        // Example of using the KDB+ salary fetcher to enrich data
-        // const benchmark = await this.salaryFetcher.getBenchmark('Software Engineer');
-        // console.log(`Market Benchmark: ${benchmark.median}`);
-
-        return null;
+        // Mock profile for development/testing
+        return {
+            id: 'mock-profile-id',
+            userId: userId,
+            fullName: 'Jan Konrad',
+            email: 'jan@example.com',
+            skills: ['TypeScript', 'Python', 'React'],
+            experience: [],
+            education: []
+        };
     }
 
+    /**
+     * Updates a user profile.
+     * Currently a no-op.
+     */
     async updateProfile(userId: string, data: Partial<Profile>): Promise<void> {
-        // TODO: Update DB
+        console.log(`[ProfileService] Updating profile for ${userId}`, data);
     }
 }

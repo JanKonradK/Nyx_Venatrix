@@ -20,7 +20,7 @@ const fastify = Fastify({
 
 // CORS
 fastify.register(cors, {
-    origin: '*'
+    origin: process.env.CORS_ORIGIN || '*' // TODO: Restrict in production
 });
 
 // Infrastructure

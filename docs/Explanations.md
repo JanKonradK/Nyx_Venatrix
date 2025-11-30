@@ -1,10 +1,10 @@
-# DeepApply System Explanations
+# Nyx Venatrix System Explanations
 
-This document provides a comprehensive overview of the DeepApply system, detailing the architecture, data flow, and the purpose of each component. It serves as a guide for developers and stakeholders to understand the "why" and "how" of the project.
+This document provides a comprehensive overview of the Nyx Venatrix system, detailing the architecture, data flow, and the purpose of each component. It serves as a guide for developers and stakeholders to understand the "why" and "how" of the project.
 
 ## System## Architecture Overview
 
-DeepApply uses a **Modular Monolith + Worker** architecture:
+Nyx Venatrix uses a **Modular Monolith + Worker** architecture:
 
 1.  **Backend (Modular Monolith)**: Node.js service that handles:
     -   API for Frontend

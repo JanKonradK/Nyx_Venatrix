@@ -7,6 +7,7 @@ import axios from 'axios';
 export interface AgentJobRequest {
     url: string;
     keywords?: string[];
+    effort_mode?: 'LOW' | 'MEDIUM' | 'HIGH';
 }
 
 export interface AgentJobResponse {

@@ -19,7 +19,11 @@ services:
       - ./infrastructure/postgres:/docker-entrypoint-initdb.d
     networks:
       - nyx_venatrix_net
-    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:alpine
@@ -29,8 +33,13 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - deepapply_net
+      - nyx_venatrix_net
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   qdrant:
     image: qdrant/qdrant
@@ -40,8 +49,13 @@ services:
     volumes:
       - qdrant_data:/qdrant/storage
     networks:
-      - deepapply_net
+      - nyx_venatrix_net
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "bash -c 'cat < /dev/null > /dev/tcp/localhost/6333'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ============================================================================
   # BUSINESS SERVICES
@@ -65,15 +79,24 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - postgres
-      - redis
-      - agent
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      agent:
+        condition: service_started
     volumes:
       - ./services/backend:/app
       - /app/node_modules
     networks:
-      - deepapply_net
+      - nyx_venatrix_net
     command: npm run dev
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   # Agent - Browser Automation & ML Worker
   agent:
@@ -92,8 +115,14 @@ services:
     volumes:
       - ./profile_data:/app/profile_data
     networks:
-      - deepapply_net
+      - nyx_venatrix_net
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   # Frontend - React SPA
   frontend:
@@ -107,7 +136,7 @@ services:
       - ./services/frontend:/app
       - /app/node_modules
     networks:
-      - deepapply_net
+      - nyx_venatrix_net
     command: npm run dev -- --host
 
   # ============================================================================
@@ -125,7 +154,7 @@ services:
     depends_on:
       - postgres
     networks:
-      - deepapply_net
+      - nyx_venatrix_net
     command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
     profiles:
       - analytics
@@ -141,7 +170,7 @@ services:
     environment:
       - KDB_LICENSE_B64=${KDB_LICENSE_B64}
     networks:
-      - deepapply_net
+      - nyx_venatrix_net
     command: -p 5000
     profiles:
       - kdb

@@ -52,8 +52,8 @@ Data is ingested into a hierarchical vector store to optimize semantic retrieval
 
 1.  **Repository Cloning**
     ```bash
-    git clone https://github.com/JanKonradK/DeepApply.git
-    cd DeepApply
+    git clone https://github.com/JanKonradK/Nyx_Venatrix.git
+    cd Nyx_Venatrix
     ```
 
 2.  **Environment Configuration**

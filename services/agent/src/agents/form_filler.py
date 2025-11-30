@@ -63,7 +63,7 @@ class FormFillerAgent(BaseAgent):
                     print("⚠️ CAPTCHA solving failed, requesting human help...")
                     response = await self.telegram.request_manual_intervention(
                         issue_type="CAPTCHA blocking progress",
-                        screenshot_path=None,  # TODO: Get actual screenshot from browser
+                        screenshot_path=None,
                         timeout_seconds=300
                     )
 

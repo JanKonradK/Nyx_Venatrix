@@ -68,7 +68,7 @@ jobs:
     #     username: ${{ secrets.DEPLOY_USER }}
     #     key: ${{ secrets.DEPLOY_SSH_KEY }}
     #     script: |
-    #       cd ~/DeepApply
+    #       cd ~/Nyx_Venatrix
     #       git pull
     #       docker-compose pull
     #       docker-compose up -d --build
