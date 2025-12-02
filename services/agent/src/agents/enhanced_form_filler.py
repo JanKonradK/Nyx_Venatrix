@@ -3,6 +3,7 @@
 from .base import BaseAgent
 from typing import Dict, Any, Optional
 from browser_use import Agent as BrowserAgent
+from uuid import UUID
 import asyncio
 import random
 import yaml
@@ -17,20 +18,31 @@ class EnhancedFormFiller(BaseAgent):
     Enhanced form filler with:
     - Answer generation integration
     - Stealth features (delays, randomization)
-    - CAPTCHA handling
+    - CAPTCHA handling via 2captcha
+    - 2FA notifications via Telegram
     - Multi-step form navigation
     """
 
-    def __init__(self, answer_generator, stealth_config_path: Optional[str] = None):
+    def __init__(
+        self,
+        answer_generator,
+        stealth_config_path: Optional[str] = None,
+        captcha_solver=None,
+        telegram_notifier=None
+    ):
         """
         Initialize enhanced form filler.
 
         Args:
             answer_generator: AnswerGenerator instance
             stealth_config_path: Path to stealth.yml config
+            captcha_solver: Optional CaptchaSolver instance
+            telegram_notifier: Optional TelegramNotifier instance
         """
         super().__init__()
         self.answer_gen = answer_generator
+        self.captcha_solver = captcha_solver
+        self.telegram_notifier = telegram_notifier
 
         # Load stealth config
         if stealth_config_path is None:
@@ -44,7 +56,10 @@ class EnhancedFormFiller(BaseAgent):
             self.stealth_config = yaml.safe_load(f)
 
         self.randomization = self.stealth_config.get('randomization', {})
-        logger.info("EnhancedFormFiller initialized with stealth features")
+
+        captcha_status = "enabled" if captcha_solver else "disabled"
+        telegram_status = "enabled" if telegram_notifier else "disabled"
+        logger.info(f"EnhancedFormFiller initialized (CAPTCHA: {captcha_status}, Telegram: {telegram_status})")
 
     async def fill_application(
         self,
