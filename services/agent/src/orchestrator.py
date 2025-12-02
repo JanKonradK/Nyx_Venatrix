@@ -1,86 +1,211 @@
+"""
+Ray-based Orchestrator for Multi-Agent Concurrency
+Manages parallel application execution with up to 5 concurrent workers
+"""
+import os
+import logging
+from typing import List, Dict, Any, Optional
+from uuid import UUID
 import asyncio
-from typing import Dict, Any
-from .agents.scraper import ScraperAgent
-from .agents.writer import CVTailorAgent, CoverLetterAgent
-from .agents.form_filler import FormFillerAgent
-from .agents.reviewer import ReviewerAgent
-from .utils.salary_oracle import SalaryOracle
 
-class Orchestrator:
-    def __init__(self):
-        self.scraper = ScraperAgent()
-        self.cv_tailor = CVTailorAgent()
-        self.cl_writer = CoverLetterAgent()
-        self.form_filler = FormFillerAgent()
-        self.reviewer = ReviewerAgent()
-        self.salary_oracle = SalaryOracle()
+try:
+    import ray
+    RAY_AVAILABLE = True
+except ImportError:
+    RAY_AVAILABLE = False
+    logging.warning("Ray not available - concurrency disabled")
 
-    async def run_pipeline(self, url: str, effort_level: str = "MEDIUM", user_profile: str = ""):
-        print(f"🚀 Orchestrator: Starting {effort_level} effort application for {url}")
+from .application_runner import ApplicationRunner
+from .matching import ProfileMatcher
+from .planning import EffortPlanner
+from .generation import AnswerGenerator
+from .agents.enhanced_form_filler import EnhancedFormFiller
 
-        # Step 1: Scrape job data
-        job_data = await self.scraper.run({"url": url})
-        if "error" in job_data:
-            return {"status": "failed", "reason": "Scraping failed", "error": job_data}
+logger = logging.getLogger(__name__)
 
-        # Step 1.5: Estimate salary (informational)
-        salary_estimate = None
+
+@ray.remote
+class ApplicationWorker:
+    """Ray actor for running a single application"""
+
+    def __init__(self, worker_id: int):
+        self.worker_id = worker_id
+        logger.info(f"Worker {worker_id} initialized")
+
+        # Initialize agent components
+        self.matcher = ProfileMatcher()
+        self.planner = EffortPlanner()
+        self.answer_gen = AnswerGenerator()
+        self.form_filler = EnhancedFormFiller(self.answer_gen)
+
+        # Mock repositories for now (will use actual in production)
+        from persistence.src.applications import ApplicationRepository
+        from persistence.src.events import EventRepository
+
+        self.app_repo = ApplicationRepository()
+        self.event_repo = EventRepository()
+
+        self.runner = ApplicationRunner(
+            profile_matcher=self.matcher,
+            effort_planner=self.planner,
+            answer_generator=self.answer_gen,
+            form_filler=self.form_filler,
+            application_repo=self.app_repo,
+            event_repo=self.event_repo
+        )
+
+    async def run_application(self, app_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Run a single application"""
         try:
-            job_title = job_data.get("title", "Software Engineer")
-            location = job_data.get("location", "San Francisco")
-            salary_estimate = self.salary_oracle.estimate_salary(job_title, location)
-            if salary_estimate:
-                print(f"💰 Salary estimate: ${salary_estimate['medianSalary']:,} "
-                      f"(${salary_estimate['minSalary']:,} - ${salary_estimate['maxSalary']:,})")
+            logger.info(f"Worker {self.worker_id} starting application {app_config['application_id']}")
+
+            result = await self.runner.run_application(**app_config)
+
+            logger.info(f"Worker {self.worker_id} completed application {app_config['application_id']}: {result['status']}")
+            return result
+
         except Exception as e:
-            print(f"⚠️ Salary estimation skipped: {e}")
+            logger.error(f"Worker {self.worker_id} failed: {e}", exc_info=True)
+            return {
+                'status': 'error',
+                'error': str(e),
+                'application_id': app_config.get('application_id')
+            }
 
-        # Step 2: Parallel content generation
-        print("⚡ Orchestrator: Parallel generation starting...")
-        tasks = []
 
-        # Always write cover letter for Medium/High
-        if effort_level in ["MEDIUM", "HIGH"]:
-            tasks.append(self.cl_writer.run({
-                "job_data": job_data,
-                "user_profile": user_profile,
-                "salary_estimate": salary_estimate  # Include salary context
-            }))
+class RayOrchestrator:
+    """Orchestrates parallel application execution using Ray"""
 
-        # Only tailor CV for High effort
-        if effort_level == "HIGH":
-            tasks.append(self.cv_tailor.run({
-                "job_data": job_data,
-                "current_cv": user_profile
-            }))
+    def __init__(self, max_concurrent_workers: int = 5):
+        if not RAY_AVAILABLE:
+            raise RuntimeError("Ray is not installed. Install with: pip install ray")
 
-        artifacts = await asyncio.gather(*tasks) if tasks else []
-        print(f"✅ Orchestrator: Generated {len(artifacts)} artifacts")
+        self.max_workers = max_concurrent_workers
+        self.initialized = False
+        logger.info(f"RayOrchestrator created with max_workers={max_concurrent_workers}")
 
-        # Step 3: Form filling
-        fill_result = await self.form_filler.run({
-            "url": url,
-            "user_profile": user_profile,
-            "artifacts": artifacts
-        })
+    def initialize(self):
+        """Initialize Ray runtime"""
+        if not self.initialized:
+            if not ray.is_initialized():
+                ray.init(ignore_reinit_error=True, logging_level=logging.INFO)
+            self.initialized = True
+            logger.info("Ray runtime initialized")
 
-        # Step 4: Review (High effort only)
-        if effort_level == "HIGH" and fill_result.get("status") == "filled":
-            review = await self.reviewer.run({"form_summary": fill_result.get("summary")})
-            if not review.get("decision", "").lower().count("approve"):
-                print("❌ Reviewer rejected. Manual intervention needed.")
-                return {
-                    "status": "review_failed",
-                    "feedback": review,
-                    "data": job_data,
-                    "salary_estimate": salary_estimate
-                }
+    def shutdown(self):
+        """Shutdown Ray runtime"""
+        if self.initialized:
+            ray.shutdown()
+            self.initialized = False
+            logger.info("Ray runtime shutdown")
 
-        return {
-            "status": fill_result.get("status", "unknown"),
-            "data": job_data,
-            "artifacts": artifacts,
-            "form": fill_result,
-            "salary_estimate": salary_estimate,
-            "effort_level": effort_level
-        }
+    async def run_session(
+        self,
+        session_id: UUID,
+        applications: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """
+        Run a batch of applications in parallel.
+
+        Args:
+            session_id: Session UUID
+            applications: List of application configs
+
+        Returns:
+            List of results
+        """
+        self.initialize()
+
+        logger.info(f"Starting session {session_id} with {len(applications)} applications")
+
+        # Create worker pool
+        workers = [ApplicationWorker.remote(i) for i in range(self.max_workers)]
+        logger.info(f"Created {len(workers)} workers")
+
+        # Distribute work
+        results = []
+        pending_tasks = []
+
+        for i, app_config in enumerate(applications):
+            # Assign to worker (round-robin)
+            worker = workers[i % len(workers)]
+
+            # Add session_id to config
+            app_config['session_id'] = session_id
+
+            # Submit task
+            task = worker.run_application.remote(app_config)
+            pending_tasks.append(task)
+
+        # Wait for all tasks to complete
+        logger.info(f"Submitted {len(pending_tasks)} tasks, waiting for completion...")
+        results = await asyncio.gather(*[asyncio.create_task(self._ray_to_asyncio(task)) for task in pending_tasks])
+
+        logger.info(f"Session {session_id} completed: {len(results)} results")
+
+        # Aggregate stats
+        successful = sum(1 for r in results if r.get('status') == 'success')
+        failed = sum(1 for r in results if r.get('status') == 'failed')
+        errors = sum(1 for r in results if r.get('status') == 'error')
+
+        logger.info(f"Session stats - Success: {successful}, Failed: {failed}, Errors: {errors}")
+
+        return results
+
+    async def _ray_to_asyncio(self, ray_task):
+        """Convert Ray task to asyncio-compatible awaitable"""
+        # Ray's get() is blocking, so we run it in executor
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, ray.get, ray_task)
+
+
+class SingleThreadOrchestrator:
+    """Fallback orchestrator when Ray is not available"""
+
+    def __init__(self):
+        logger.warning("Using single-threaded orchestrator (Ray not available)")
+
+        # Initialize single runner
+        from persistence.src.applications import ApplicationRepository
+        from persistence.src.events import EventRepository
+
+        self.matcher = ProfileMatcher()
+        self.planner = EffortPlanner()
+        self.answer_gen = AnswerGenerator()
+        self.form_filler = EnhancedFormFiller(self.answer_gen)
+
+        self.app_repo = ApplicationRepository()
+        self.event_repo = EventRepository()
+
+        self.runner = ApplicationRunner(
+            profile_matcher=self.matcher,
+            effort_planner=self.planner,
+            answer_generator=self.answer_gen,
+            form_filler=self.form_filler,
+            application_repo=self.app_repo,
+            event_repo=self.event_repo
+        )
+
+    async def run_session(
+        self,
+        session_id: UUID,
+        applications: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Run applications sequentially"""
+        logger.info(f"Starting single-threaded session {session_id} with {len(applications)} applications")
+
+        results = []
+        for app_config in applications:
+            app_config['session_id'] = session_id
+            result = await self.runner.run_application(**app_config)
+            results.append(result)
+
+        return results
+
+
+def get_orchestrator(max_concurrent_workers: int = 5):
+    """Factory function to get appropriate orchestrator"""
+    if RAY_AVAILABLE:
+        return RayOrchestrator(max_concurrent_workers)
+    else:
+        return SingleThreadOrchestrator()
