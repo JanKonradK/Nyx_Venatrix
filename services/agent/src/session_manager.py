@@ -3,7 +3,7 @@ Session Manager Service
 Handles lifecycle of application sessions, including creation, monitoring, and digest generation.
 """
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from uuid import UUID
 from datetime import datetime
 
@@ -103,3 +103,38 @@ class SessionManager:
         )
 
         return digest_id
+
+    def recover_active_sessions(self) -> List[UUID]:
+        """
+        Find sessions that were left running (e.g. due to crash) and mark them as interrupted.
+        Returns list of recovered session IDs.
+        """
+        active_sessions = self.session_repo.get_active_sessions()
+        recovered_ids = []
+
+        for session in active_sessions:
+            session_id = session['id']
+            logger.warning(f"Recovering interrupted session {session_id}")
+
+            # Mark as interrupted
+            self.session_repo.update_session_status(
+                session_id,
+                'interrupted',
+                end_datetime=datetime.now()
+            )
+
+            self.session_repo.add_session_event(
+                session_id,
+                'session_recovered',
+                "Session marked as interrupted during system startup"
+            )
+
+            # Generate partial digest
+            try:
+                self.generate_session_digest(session_id)
+            except Exception as e:
+                logger.error(f"Failed to generate digest for recovered session {session_id}: {e}")
+
+            recovered_ids.append(session_id)
+
+        return recovered_ids

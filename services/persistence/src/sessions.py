@@ -56,6 +56,15 @@ class SessionRepository:
         result = self.db.execute_query(query, (session_id,))
         return result[0] if result else None
 
+    def get_active_sessions(self) -> List[Dict[str, Any]]:
+        """Get all sessions with status 'running'"""
+        query = """
+            SELECT * FROM application_sessions
+            WHERE status = 'running'
+            ORDER BY start_datetime DESC
+        """
+        return self.db.execute_query(query)
+
     def update_session_status(self, session_id: UUID, status: str, end_datetime: Optional[datetime] = None):
         """Update session status"""
         if end_datetime:

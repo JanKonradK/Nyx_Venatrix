@@ -8,6 +8,7 @@ from typing import Dict, Any, Optional
 from uuid import UUID
 import sys
 import os
+import asyncio
 
 # Add services to path if not present (for standalone runs)
 try:
@@ -159,17 +160,51 @@ class ApplicationRunner:
                 }
             )
 
-            # Step 3: Fill application form
-            logger.info(f"Step 3: Filling form (effort: {effort_level})...")
-            form_result = await self.form_filler.fill_application(
-                url=job_url,
-                job_title=job_title,
-                company_name=company_name,
-                job_description=job_description,
-                user_profile=user_profile,
-                effort_level=effort_level,
-                resume_path=resume_path
-            )
+            # Step 3: Fill application form with retries
+            max_retries = 3
+            base_delay = 5  # seconds
+            form_result = {'status': 'failed', 'summary': 'Max retries exceeded'}
+
+            for attempt in range(max_retries):
+                try:
+                    logger.info(f"Step 3: Filling form (effort: {effort_level}, attempt: {attempt + 1}/{max_retries})...")
+                    form_result = await self.form_filler.fill_application(
+                        url=job_url,
+                        job_title=job_title,
+                        company_name=company_name,
+                        job_description=job_description,
+                        user_profile=user_profile,
+                        effort_level=effort_level,
+                        resume_path=resume_path
+                    )
+
+                    if form_result['status'] == 'filled':
+                        break  # Success
+
+                    # If failed, check if we should retry
+                    if attempt < max_retries - 1:
+                        delay = base_delay * (2 ** attempt)
+                        logger.warning(f"Attempt {attempt + 1} failed: {form_result.get('summary')}. Retrying in {delay}s...")
+
+                        # Log retry event
+                        self.event_repo.append_event(
+                            'application_retry',
+                            application_id=application_id,
+                            session_id=session_id,
+                            payload={'attempt': attempt + 1, 'delay': delay, 'reason': form_result.get('summary')}
+                        )
+
+                        await asyncio.sleep(delay)
+
+                except Exception as e:
+                    logger.error(f"Attempt {attempt + 1} exception: {e}")
+                    if attempt < max_retries - 1:
+                        delay = base_delay * (2 ** attempt)
+                        logger.warning(f"Retrying in {delay}s...")
+                        await asyncio.sleep(delay)
+                    else:
+                        # If final attempt failed with exception, create a failure result
+                        form_result = {'status': 'failed', 'summary': str(e)}
 
             # Log form filling result
             if form_result['status'] == 'filled':
