@@ -59,35 +59,52 @@ class SalaryOracle:
 
     def _fallback_estimate(self, job_title: str, location: str) -> Dict:
         """Fallback salary estimation when KDB is unavailable."""
-        # Very basic fallback logic
-        base_salary = 150000  # Baseline for software engineer
+        # Enhanced fallback logic with role-based baselines
+        title_lower = job_title.lower()
 
-        # Title adjustments
-        if "senior" in job_title.lower():
-            base_salary *= 1.15
-        elif "lead" in job_title.lower() or "staff" in job_title.lower():
-            base_salary *= 1.30
-        elif "principal" in job_title.lower():
-            base_salary *= 1.50
-
-        # Location adjustments
-        if "san francisco" in location.lower() or "bay area" in location.lower():
-            location_mult = 1.0
-        elif "new york" in location.lower():
-            location_mult = 0.95
-        elif "seattle" in location.lower() or "boston" in location.lower():
-            location_mult = 0.85
+        # Base salaries by role type
+        if any(x in title_lower for x in ['manager', 'director', 'head', 'vp']):
+            base = 180000
+        elif any(x in title_lower for x in ['engineer', 'developer', 'sre', 'devops']):
+            base = 140000
+        elif any(x in title_lower for x in ['data', 'scientist', 'ml', 'ai']):
+            base = 150000
+        elif any(x in title_lower for x in ['product', 'design', 'ux']):
+            base = 130000
         else:
-            location_mult = 0.75
+            base = 100000
 
-        adjusted = int(base_salary * location_mult)
+        # Seniority multipliers
+        if "senior" in title_lower or "sr." in title_lower:
+            base *= 1.25
+        elif "staff" in title_lower or "principal" in title_lower:
+            base *= 1.50
+        elif "lead" in title_lower:
+            base *= 1.35
+        elif "junior" in title_lower or "associate" in title_lower:
+            base *= 0.85
+
+        # Location multipliers (simplified tier list)
+        tier1 = ['san francisco', 'bay area', 'new york', 'seattle', 'zurich', 'london']
+        tier2 = ['austin', 'boston', 'los angeles', 'berlin', 'amsterdam', 'toronto']
+
+        loc_lower = location.lower()
+        if any(c in loc_lower for c in tier1):
+            loc_mult = 1.0
+        elif any(c in loc_lower for c in tier2):
+            loc_mult = 0.9
+        else:
+            loc_mult = 0.75
+
+        adjusted = int(base * loc_mult)
 
         return {
-            "minSalary": int(adjusted * 0.85),
-            "maxSalary": int(adjusted * 1.15),
+            "minSalary": int(adjusted * 0.9),
+            "maxSalary": int(adjusted * 1.1),
             "medianSalary": adjusted,
             "currency": "USD",
-            "confidence": 0.50  # Lower confidence for fallback
+            "confidence": 0.60,  # Moderate confidence for fallback
+            "source": "simulated_kdb_oracle"
         }
 
 
