@@ -20,6 +20,10 @@ from persistence.src.applications import ApplicationRepository
 from persistence.src.events import EventRepository
 from persistence.src.sessions import SessionRepository
 
+from .utils.logger import setup_logger
+
+logger = setup_logger(__name__)
+
 app = FastAPI(title="Nyx Venatrix Agent API")
 
 # Metrics
@@ -68,16 +72,16 @@ async def startup_event():
     required_vars = ['GROK_API_KEY', 'OPENAI_API_KEY', 'AGENT_MODEL']
     missing_vars = [var for var in required_vars if not os.getenv(var)]
     if missing_vars:
-        print(f"❌ Missing required environment variables: {', '.join(missing_vars)}")
+        logger.error(f"Missing required environment variables: {', '.join(missing_vars)}")
         raise RuntimeError(f"Missing environment variables: {missing_vars}")
-    print("✓ Environment validated")
+    logger.info("Environment validated")
 
     # Initialize RAG (for profile data)
-    print("📚 Loading RAG engine...")
+    logger.info("Loading RAG engine...")
     kb = KnowledgeBase()
 
     # Initialize Profile Matcher
-    print("🎯 Initializing profile matcher...")
+    logger.info("Initializing profile matcher...")
     profile_matcher = ProfileMatcher()
 
     # Load profile from RAG or profile_data
@@ -88,36 +92,36 @@ async def startup_event():
 
         if profile_text:
             profile_matcher.load_profile(profile_text)
-            print(f"✓ Profile loaded from RAG ({len(profile_text)} chars)")
+            logger.info(f"Profile loaded from RAG ({len(profile_text)} chars)")
         else:
-            print("⚠️  No profile found in RAG, matcher not initialized")
+            logger.warning("No profile found in RAG, matcher not initialized")
     except Exception as e:
-        print(f"⚠️  Could not load profile: {e}")
+        logger.warning(f"Could not load profile: {e}")
 
     # Initialize Effort Planner
-    print("📋 Initializing effort planner...")
+    logger.info("Initializing effort planner...")
     try:
         effort_planner = EffortPlanner()
-        print("✓ Effort planner loaded")
+        logger.info("Effort planner loaded")
     except Exception as e:
-        print(f"⚠️  Could not load effort planner: {e}")
+        logger.warning(f"Could not load effort planner: {e}")
         effort_planner = None
 
     # Initialize Job Ingestion Service
     if profile_matcher and effort_planner:
         job_ingestion = JobIngestionService(profile_matcher, effort_planner)
-        print("✓ Job ingestion service initialized")
+        logger.info("Job ingestion service initialized")
 
     # Initialize QA Agent
-    print("🛡️ Initializing QA Agent...")
+    logger.info("Initializing QA Agent...")
     try:
         qa_agent = QAAgent()
-        print("✓ QA Agent loaded")
+        logger.info("QA Agent loaded")
     except Exception as e:
-        print(f"⚠️ Could not load QA Agent: {e}")
+        logger.warning(f"Could not load QA Agent: {e}")
 
     # Initialize Application Runner Components
-    print("🚀 Initializing Application Runner...")
+    logger.info("Initializing Application Runner...")
     try:
         answer_gen = AnswerGenerator(model=os.getenv('AGENT_MODEL', 'grok-beta'))
         form_filler = EnhancedFormFiller(answer_gen)
@@ -137,17 +141,17 @@ async def startup_event():
                 event_repo=event_repo,
                 session_repo=session_repo
             )
-            print("✓ Application Runner initialized")
+            logger.info("Application Runner initialized")
         else:
-            print("⚠️ Application Runner skipped (dependencies missing)")
+            logger.warning("Application Runner skipped (dependencies missing)")
 
     except Exception as e:
-        print(f"⚠️ Failed to initialize Application Runner: {e}")
+        logger.error(f"Failed to initialize Application Runner: {e}")
 
     # Initialize Orchestrator
     orchestrator = Orchestrator()
 
-    print("✅ Agent system ready")
+    logger.info("Agent system ready")
 
 
 @app.post("/apply")

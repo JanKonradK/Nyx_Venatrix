@@ -20,8 +20,9 @@ from .matching import ProfileMatcher
 from .planning import EffortPlanner
 from .generation import AnswerGenerator
 from .agents.enhanced_form_filler import EnhancedFormFiller
+from .utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @ray.remote
