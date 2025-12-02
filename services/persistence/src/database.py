@@ -9,9 +9,17 @@ from typing import Optional, Dict, Any, List
 import psycopg2
 from psycopg2 import pool
 from psycopg2.extras import RealDictCursor, execute_values
+from psycopg2.extensions import register_adapter, AsIs
+from uuid import UUID
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Register UUID adapter for psycopg2
+def adapt_uuid(uuid_obj):
+    return AsIs(f"'{uuid_obj}'")
+
+register_adapter(UUID, adapt_uuid)
 
 
 class DatabaseConnection:
