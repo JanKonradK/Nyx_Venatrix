@@ -107,10 +107,31 @@ class EnhancedFormFiller(BaseAgent):
 
             logger.info(f"Browser automation completed: {result[:100]}")
 
+            # Try to parse JSON result
+            import json
+            parsed_result = {}
+            status = "filled"
+
+            try:
+                # Find JSON-like structure in the result if it's mixed with text
+                json_start = result.find('{')
+                json_end = result.rfind('}') + 1
+                if json_start >= 0 and json_end > json_start:
+                    json_str = result[json_start:json_end]
+                    parsed_result = json.loads(json_str)
+                    status = parsed_result.get('status', 'filled')
+                else:
+                    # Fallback if no JSON found
+                    parsed_result = {"summary": result}
+            except Exception as e:
+                logger.warning(f"Failed to parse browser result as JSON: {e}")
+                parsed_result = {"summary": result}
+
             # Parse result
             return {
-                "status": "filled",
-                "summary": result,
+                "status": status,
+                "summary": parsed_result.get('summary', result),
+                "details": parsed_result,
                 "cover_letter_generated": cover_letter is not None,
                 "effort_level": effort_level
             }
@@ -227,11 +248,19 @@ class EnhancedFormFiller(BaseAgent):
         task_parts.extend([
             "",
             "SPECIAL HANDLING:",
-            "- If CAPTCHA detected: Return 'CAPTCHA_DETECTED' and the type",
-            "- If 2FA requested: Return '2FA_REQUIRED' and the method",
-            "- If blocked/error: Return 'ERROR' with details",
+            "- If CAPTCHA detected: Return JSON { \"status\": \"captcha\", \"type\": \"...\" }",
+            "- If 2FA requested: Return JSON { \"status\": \"2fa\", \"method\": \"...\" }",
+            "- If blocked/error: Return JSON { \"status\": \"error\", \"details\": \"...\" }",
             "",
-            "IMPORTANT: DO NOT click final submit button. Stop at review page.",
+            "IMPORTANT FINAL STEP:",
+            "When you reach the review page (or if you are instructed to stop), you MUST return a JSON string with the following format:",
+            "{",
+            "  \"status\": \"success\" | \"failed\" | \"review_ready\",",
+            "  \"summary\": \"Brief summary of what was filled\",",
+            "  \"missing_fields\": [\"list\", \"of\", \"missing\", \"fields\"],",
+            "  \"next_step\": \"submit\" | \"manual_intervention\"",
+            "}",
+            "DO NOT click the final submit button unless you are 100% sure. For now, STOP at the review page and return 'review_ready'.",
         ])
 
         return "\n".join(task_parts)
