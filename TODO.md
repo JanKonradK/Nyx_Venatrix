@@ -1,183 +1,133 @@
-# Nyx Venatrix - Updated TODO List
+# TODO - Development Roadmap
 
-## ✅ COMPLETED
+## 🚧 Phase 4 - Form Filling & Automation (IN PROGRESS)
 
-### Sprint 1-3 (Core System)
-- [x] Database schema (40+ tables, 60+ indexes, 3 views)
-- [x] Persistence layer (7 repositories)
-- [x] Job ingestion pipeline
-- [x] Profile matching (OpenAI embeddings)
-- [x] Effort planning (policy-driven)
-- [x] Session management
-- [x] Ray orchestration (5 workers)
-- [x] QA Agent (hallucination prevention)
-- [x] ATS Adapters (Workday, Greenhouse)
-- [x] Job Discovery Agent
-- [x] TUI Dashboard
+### Form Detection & Mapping
+- [ ] Enhance `EnhancedFormFiller` to detect all field types
+  - [ ] Date pickers
+  - [ ] File uploads (resume, cover letter)
+  - [ ] Select dropdowns
+  - [ ] Radio buttons
+  - [ ] Checkbox groups
+- [ ] Semantic categorization (name, email, phone, address, education, experience)
+- [ ] Multi-page form navigation detection
+- [ ] Handle dynamic forms (JavaScript-rendered)
 
-### Sprint 4-5 (Observability & Stealth)
-- [x] MLflow integration
-- [x] Langfuse integration
-- [x] Stealth Manager (rate limiting)
-- [x] Per-domain policies
-- [x] Dynamic delay generation
+### Answer Generation
+- [ ] Cover letter generation for medium/high effort
+  - [ ] Context assembly (JD + profile + CV)
+  - [ ] Template-based with AI enhancement
+  - [ ] Tone matching to company culture
+- [ ] Screening question answering
+  - [ ] Open-ended questions
+  - [ ] Multiple choice
+  - [ ] Yes/no binary questions
+- [ ] Guardrails integration (prevent hallucinations)
 
-### Infrastructure
-- [x] Docker Compose setup
-- [x] Port conflict resolution
-- [x] Environment configuration
-- [x] Setup automation script
-- [x] CI/CD workflows
+### Submission & Confirmation
+- [ ] Robust success detection
+  - [ ] Confirmation pages
+  - [ ] Success messages
+  - [ ] Email confirmations
+- [ ] Screenshot capture of confirmation
+- [ ] Parse confirmation codes/IDs
+- [ ] Handle multi-step redirects
 
 ### Testing
-- [x] Persistence tests
-- [x] Agent tests
-- [x] QA Agent tests
-- [x] Orchestrator tests
-- [x] Effort planner tests (NEW)
-- [x] 96%+ test pass rate
+- [ ] End-to-end test with real job URLs
+- [ ] Verify database logging
+- [ ] Test failure scenarios
 
 ---
 
-## 🚧 IN PROGRESS
+## 🚧 Phase 5 - CAPTCHA & 2FA Handling
 
-### Enhanced Form Filling (Phase 4)
-- [ ] **Form Detection Enhancement**
-  - [ ] Detect all field types (date, file, select, radio)
-  - [ ] Associate fields with semantic categories
-  - [ ] Handle multi-page forms with navigation
+### CAPTCHA Integration
+- [ ] 2captcha API integration
+  - [ ] hCaptcha support
+  - [ ] reCAPTCHA v2/v3
+  - [ ] Cloudflare Turnstile
+- [ ] Retry logic (3 attempts)
+- [ ] Timeout handling
+- [ ] Cost tracking
 
-- [ ] **Answer Generation**
-  - [ ] Cover letter generation for medium/high effort
-  - [ ] Screening question answering
-  - [ ] Context assembly (JD + profile + CV)
+### Manual Intervention
+- [ ] Telegram bot for 2FA codes
+  - [ ] Push notifications
+  - [ ] Code input interface
+  - [ ] Session pause/resume
+- [ ] Timeout handling (5 min wait)
+- [ ] Skip to next application on failure
 
-- [ ] **Submission Detection**
-  - [ ] Detect success confirmation pages
-  - [ ] Capture confirmation screenshots
-  - [ ] Parse confirmation emails
+---
 
-### CAPTCHA/2FA Handling (Phase 5 Extension)
-- [ ] **CAPTCHA Integration**
-  - [ ] 2captcha API integration
-  - [ ] Retry logic (3 attempts)
-  - [ ] Support for hCaptcha, reCAPTCHA v2/v3
-  - [ ] Cloudflare Turnstile support
-
-- [ ] **2FA/Manual Intervention**
-  - [ ] Telegram bot integration for notifications
-  - [ ] Manual code input via API
-  - [ ] Session pause/resume for intervention
-  - [ ] Timeout handling (5 min wait)
+## 📋 Phase 6 - Production Features
 
 ### Session Digest & Analytics
-- [ ] **Digest Generation**
-  - [ ] Aggregate session statistics
-  - [ ] Per-domain breakdown
+- [ ] Post-session summary generation
+  - [ ] Applications submitted
+  - [ ] Success/failure breakdown
   - [ ] Cost analysis
-  - [ ] Success rate reporting
-
-- [ ] **Email Notifications**
-  - [ ] SMTP configuration
+  - [ ] Per-domain stats
+- [ ] Email digest delivery
   - [ ] HTML email templates
-  - [ ] Digest delivery
-  - [ ] Failure alerts
+  - [ ] SMTP configuration
+- [ ] Weekly/monthly reports
+
+### Resume Tailoring
+- [ ] LaTeX resume generation
+  - [ ] Skill highlighting based on JD
+  - [ ] Experience reordering
+  - [ ] Keyword optimization
+- [ ] PDF compilation pipeline
+- [ ] Version tracking in database
+
+### Enhanced Browser Fingerprinting
+- [ ] Canvas fingerprint randomization
+- [ ] WebGL noise injection
+- [ ] User agent rotation from pool
+- [ ] Timezone spoofing
+- [ ] Plugin enumeration hiding
+- [ ] Screen resolution variation
 
 ---
 
-## 📋 UPCOMING (Priority Order)
+## 🔮 Future Enhancements
 
-### 1. Integration Testing (HIGH)
-- [ ] End-to-end workflow test
+### Integration Testing (HIGH PRIORITY)
+- [ ] End-to-end workflow test suite
 - [ ] Database migration verification
-- [ ] Multi-worker concurrency test
+- [ ] Multi-worker concurrency tests
 - [ ] Error recovery scenarios
-- [ ] Rate limiting enforcement test
+- [ ] Rate limiting enforcement tests
 
-### 2. Production Deployment (HIGH)
-- [ ] Docker image optimization
-- [ ] Environment-specific configs
-- [ ] Health check endpoints
-- [ ] Monitoring dashboards
-- [ ] Backup/restore procedures
-
-### 3. Enhanced Browser Fingerprinting (MEDIUM)
-- [ ] Canvas fingerprint randomization
-- [ ] WebGL noise injection
-- [ ] User agent rotation
-- [ ] Timezone spoofing
-- [ ] Plugin enumeration hiding
-
-###4. Resume Tailoring (MEDIUM)
-- [ ] LaTeX resume generation
-- [ ] Skill highlighting based on JD
-- [ ] Experience reordering
-- [ ] Keyword optimization
-- [ ] PDF compilation pipeline
-
-### 5. Frontend Dashboard (MEDIUM)
+### Frontend Dashboard
 - [ ] React-based UI
-- [ ] Real-time session monitoring
-- [ ] Application history view
-- [ ] Configuration management
-- [ ] Manual application control
+  - [ ] Real-time session monitoring
+  - [ ] Application history view
+  - [ ] Configuration management
+  - [ ] Manual application control
+- [ ] WebSocket for live updates
+- [ ] Admin panel
 
-### 6. Advanced Features (LOW)
-- [ ] Session recovery after crash
-- [ ] Application retry logic
-- [ ] Company blacklist management
+### Advanced Features
+- [ ] Session recovery after crashes
+- [ ] Application retry logic with backoff
+- [ ] Company blacklist management UI
 - [ ] Skill synonym expansion
 - [ ] Multi-language support
 
----
-
-## 🐛 Known Issues to Fix
-
-### Critical
-- [x] ChatOpenAI provider compatibility ✅ FIXED
-- [x] Effort policy syntax errors ✅ FIXED
-- [x] Dependency conflicts ✅ FIXED
-
-### Medium Priority
-- [ ] Browser launch timeout in WSL (environmental - requires display)
-- [ ] Test mock issue in test_persistence.py (non-blocking)
-- [ ] Async test handling in test_agents.py
-
-### Low Priority
-- [ ] Docker warning about obsolete version attribute (cosmetic)
-- [ ] KDB_LICENSE_B64 warning (optional service)
-
----
-
-## 🔮 Future Roadmap (Post v0.1)
-
 ### Interview Prep Engine
-- [ ] JD + application data aggregatio
-
-n
+- [ ] JD + application data aggregation
 - [ ] Question bank generation
 - [ ] Company research automation
 - [ ] Prep document creation
-- [ ] GitHub project linking
 
 ### Saturnus Integration (Separate Project)
 - [ ] Email inbox monitoring
 - [ ] Application-email matching
 - [ ] Response classification
 - [ ] TickTick task creation
-- [ ] Eisenhower matrix categorization
-
-### Mobile App
-- [ ] Push notification for approvals
-- [ ] Quick application review
-- [ ] Session control (pause/resume)
-- [ ] Statistics dashboard
-
-### AI Enhancements
-- [ ] Fine-tuned model for job matching
-- [ ] Custom embeddings for domain terms
-- [ ] Multi-modal analysis (company culture)
-- [ ] Sentiment analysis of job descriptions
 
 ---
 
@@ -185,12 +135,24 @@ n
 
 - [ ] API documentation (OpenAPI/Swagger)
 - [ ] Deployment guide (AWS/GCP/Azure)
-- [ ] Monitoring & alerting setup
-- [ ] Backup & disaster recovery
-- [ ] Security best practices
+- [ ] Monitoring & alerting setup guide
+- [ ] Backup & disaster recovery procedures
+- [ ] Security best practices document
+
+---
+
+## 🐛 Known Issues to Address
+
+See `BUGS.md` for full tracking.
+
+**Current Priority:**
+1. Complete form filling enhancements
+2. CAPTCHA/2FA handling
+3. Integration testing
+4. Production deployment prep
 
 ---
 
 **Last Updated:** 2025-12-02
-**Version:** 0.1.0
-**Completion:** ~80% for v0.1 MVP
+**Current Phase:** Phase 4
+**Estimated Completion:** v0.2.0 by Q1 2025
