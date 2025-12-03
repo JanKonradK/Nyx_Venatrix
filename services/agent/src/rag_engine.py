@@ -1,4 +1,4 @@
-from sentence_transformers import SentenceTransformer
+from openai import OpenAI
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance, Filter, FieldCondition, MatchValue
 import os
@@ -6,21 +6,25 @@ import uuid
 
 class KnowledgeBase:
     def __init__(self):
-        # Skills: Hugging Face Transformers, PyTorch
-        self.model = SentenceTransformer('all-MiniLM-L6-v2')
-        self.client = QdrantClient(url=os.getenv("QDRANT_URI"))
+        # Use OpenAI embeddings (text-embedding-3-small)
+        self.openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.client = QdrantClient(url=os.getenv("QDRANT_URI", "http://localhost:6333"))
         self.collection_name = "profile_data"
 
-        # Ensure collection exists
+        # Ensure collection exists (OpenAI text-embedding-3-small has 1536 dimensions)
         if not self.client.collection_exists(self.collection_name):
             self.client.create_collection(
                 collection_name=self.collection_name,
-                vectors_config=VectorParams(size=384, distance=Distance.COSINE)
+                vectors_config=VectorParams(size=1536, distance=Distance.COSINE)
             )
 
     def embed_text(self, text: str):
         # Returns list of floats (vector)
-        return self.model.encode(text).tolist()
+        response = self.openai_client.embeddings.create(
+            input=text,
+            model="text-embedding-3-small"
+        )
+        return response.data[0].embedding
 
     def search_relevant_info(self, query: str, limit: int = 5):
         vector = self.embed_text(query)

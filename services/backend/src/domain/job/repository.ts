@@ -21,7 +21,7 @@ export class JobRepository {
         return result.rows[0];
     }
 
-    async findById(id: number): Promise<Job | null> {
+    async findById(id: string): Promise<Job | null> {
         const result = await this.pool.query(
             'SELECT * FROM jobs WHERE id = $1',
             [id]
@@ -30,7 +30,7 @@ export class JobRepository {
         return result.rows[0] || null;
     }
 
-    async updateStatus(id: number, status: JobStatus, metadata?: {
+    async updateStatus(id: string, status: JobStatus, metadata?: {
         cost_usd?: number;
         tokens_input?: number;
         tokens_output?: number;

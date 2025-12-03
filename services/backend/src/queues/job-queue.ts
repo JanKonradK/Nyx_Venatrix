@@ -6,9 +6,14 @@ import { Job as BullJob, Queue, Worker } from 'bullmq';
 import { JobService, JobStatus } from '../domain/job';
 import { AgentClient } from '../integrations';
 
+type JobQueuePayload = {
+    job_id: string;
+    url: string;
+};
+
 export class JobQueueManager {
-    private queue: Queue;
-    private worker: Worker;
+    private queue: Queue<JobQueuePayload>;
+    private worker: Worker<JobQueuePayload>;
 
     constructor(
         private jobService: JobService,
@@ -16,21 +21,21 @@ export class JobQueueManager {
         redisConfig: { host: string; port: number }
     ) {
         // Create queue
-        this.queue = new Queue('job-processing', {
+        this.queue = new Queue<JobQueuePayload>('job-processing', {
             connection: redisConfig
         });
 
         // Create worker
-        this.worker = new Worker(
+        this.worker = new Worker<JobQueuePayload>(
             'job-processing',
-            async (job: BullJob) => await this.processJob(job),
+            async (job: BullJob<JobQueuePayload>) => await this.processJob(job),
             { connection: redisConfig }
         );
 
         this.setupEventHandlers();
     }
 
-    private async processJob(bullJob: BullJob) {
+    private async processJob(bullJob: BullJob<JobQueuePayload>) {
         const { job_id, url } = bullJob.data;
 
         console.log(`Processing job ${job_id}: ${url}`);
@@ -84,7 +89,7 @@ export class JobQueueManager {
         });
     }
 
-    getQueue(): Queue {
+    getQueue(): Queue<JobQueuePayload> {
         return this.queue;
     }
 

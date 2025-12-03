@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nyx Venatrix - Simulation Target</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .hidden { display: none; }
+        #success-message { color: green; font-weight: bold; margin-top: 20px; padding: 10px; border: 1px solid green; background: #e8f5e9; }
+    </style>
+</head>
+<body>
+    <h1>Software Engineer Application</h1>
+    <p>Company: TechCorp Simulation Inc.</p>
+    <p>Location: Remote</p>
+
+    <div id="job-description">
+        <h3>Job Description</h3>
+        <p>We are looking for a skilled Software Engineer to join our simulation team. You should have experience with Python, TypeScript, and distributed systems.</p>
+    </div>
+
+    <form id="application-form" onsubmit="handleSubmit(event)">
+        <div class="form-group">
+            <label for="full_name">Full Name</label>
+            <input type="text" id="full_name" name="full_name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+
+        <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" name="phone">
+        </div>
+
+        <div class="form-group">
+            <label for="linkedin">LinkedIn Profile</label>
+            <input type="url" id="linkedin" name="linkedin">
+        </div>
+
+        <div class="form-group">
+            <label for="experience">Years of Experience</label>
+            <select id="experience" name="experience">
+                <option value="">Select...</option>
+                <option value="0-2">0-2 years</option>
+                <option value="3-5">3-5 years</option>
+                <option value="5+">5+ years</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="cover_letter">Cover Letter</label>
+            <textarea id="cover_letter" name="cover_letter" rows="5"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="terms" required> I agree to the terms and conditions
+            </label>
+        </div>
+
+        <button type="submit">Submit Application</button>
+    </form>
+
+    <div id="success-message" class="hidden">
+        Application Submitted Successfully!
+        <br>
+        <span id="timestamp"></span>
+    </div>
+
+    <script>
+        function handleSubmit(e) {
+            e.preventDefault();
+            // Simulate API call
+            setTimeout(() => {
+                document.getElementById('application-form').classList.add('hidden');
+                const successMsg = document.getElementById('success-message');
+                successMsg.classList.remove('hidden');
+                document.getElementById('timestamp').textContent = new Date().toISOString();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

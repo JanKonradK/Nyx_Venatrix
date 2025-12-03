@@ -10,7 +10,15 @@ This directory contains the shared database infrastructure that can be used acro
 
 ## Quick Start
 
-### Start Infrastructure
+### Start Shared PostgreSQL Only
+
+```bash
+docker compose -f ../docker-compose.shared-db.yml up -d
+```
+
+This launches the standalone PostgreSQL stack (with the `000_create_databases.sh` init script creating both `nyx_venatrix` and `saturnus` databases) while exposing the `shared_db_network` bridge.
+
+### Start Full Infrastructure (Postgres + Redis + Qdrant)
 
 ```bash
 cd infrastructure
@@ -92,8 +100,7 @@ These volumes persist even when containers are stopped/removed.
 ## Initialization Scripts
 
 PostgreSQL will run all `.sql` files in `./postgres/` directory on first startup:
-- `init.sql` - Basic schema
-- `002_comprehensive_schema.sql` - Full 40+ table schema
+- `001_schema.sql` - Full production schema definition
 - `003_seed_data.sql` - Initial seed data
 
 ## Health Checks

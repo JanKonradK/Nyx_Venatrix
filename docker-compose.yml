@@ -3,28 +3,6 @@ services:
   # INFRASTRUCTURE
   # ---------------------------------------------------------------------------
 
-  # PostgreSQL Database (Shared)
-  postgres:
-    image: pgvector/pgvector:pg16
-    container_name: shared_postgres
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-      - POSTGRES_DB=${POSTGRES_DB:-nyx_venatrix}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./infrastructure/postgres/init-scripts:/docker-entrypoint-initdb.d
-    networks:
-      - shared_db_network
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
   # Redis (Shared cache/queue)
   redis:
     image: redis:7-alpine
@@ -91,8 +69,6 @@ services:
       - nyx_app_net
     command: npm run dev
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
@@ -125,8 +101,6 @@ services:
       - nyx_app_net
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
-      postgres:
-        condition: service_healthy
       qdrant:
         condition: service_healthy
     healthcheck:
@@ -156,8 +130,6 @@ services:
       - backend
 
 volumes:
-  postgres_data:
-    name: shared_postgres_data
   redis_data:
     name: shared_redis_data
   qdrant_data:
@@ -165,7 +137,7 @@ volumes:
 
 networks:
   shared_db_network:
+    external: true
     name: shared_db_network
-    driver: bridge
   nyx_app_net:
     driver: bridge

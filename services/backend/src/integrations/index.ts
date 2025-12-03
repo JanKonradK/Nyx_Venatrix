@@ -2,6 +2,6 @@
  * Integrations module exports
  */
 
-export * from './agent';
+export * from './agent_client';
 export * from './telegram';
 

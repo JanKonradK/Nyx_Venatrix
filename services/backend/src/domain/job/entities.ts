@@ -12,7 +12,7 @@ export enum JobStatus {
 }
 
 export interface Job {
-    id: number;
+    id: string;
     original_url: string;
     canonical_url: string;
     source: string;

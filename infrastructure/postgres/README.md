@@ -16,7 +16,7 @@ The database is designed to support a complex, multi-agent system with extensive
 
 ## Migrations
 
-### `002_comprehensive_schema.sql`
+### `001_schema.sql`
 The master schema definition. Contains:
 - **40+ Tables**: Covering all system domains.
 - **pgvector**: Enabled for vector similarity search on job descriptions.
@@ -25,8 +25,8 @@ The master schema definition. Contains:
 
 ## Setup
 
-To apply the schema:
+A bootstrap script (`000_create_databases.sh`) runs automatically inside the container to provision both the `nyx_venatrix` and `saturnus` databases on first start. After the container is healthy, apply the schema manually if needed:
 
 ```bash
-docker exec -i nyx_venatrix_postgres psql -U postgres -d nyx_venatrix < 002_comprehensive_schema.sql
+docker exec -i nyx_venatrix_postgres psql -U postgres -d nyx_venatrix < 001_schema.sql
 ```

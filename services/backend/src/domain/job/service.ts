@@ -20,7 +20,7 @@ export class JobService {
         this.jobQueue = queue;
     }
 
-    async createAndQueue(params: CreateJobParams): Promise<{ job_id: number; status: string }> {
+    async createAndQueue(params: CreateJobParams): Promise<{ job_id: string; status: string }> {
         // Create job in database
         const job = await this.repository.create(params);
 
@@ -40,12 +40,12 @@ export class JobService {
         };
     }
 
-    async getById(id: number): Promise<Job | null> {
+    async getById(id: string): Promise<Job | null> {
         return this.repository.findById(id);
     }
 
     async updateStatus(
-        id: number,
+        id: string,
         newStatus: JobStatus,
         metadata?: Parameters<JobRepository['updateStatus']>[2]
     ): Promise<Job> {

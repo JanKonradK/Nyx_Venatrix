@@ -1,11 +1,11 @@
 from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel
 import os
-from typing import Optional, List
-from uuid import uuid4
+from typing import Optional, List, Dict
+from uuid import uuid4, UUID
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 
-from .orchestrator import Orchestrator
+from .orchestrator import get_orchestrator
 from .session_manager import SessionManager
 from .rag_engine import KnowledgeBase
 from .matching import ProfileMatcher, load_profile_from_resume
@@ -15,6 +15,7 @@ from .application_runner import ApplicationRunner
 from .generation import AnswerGenerator
 from .agents.enhanced_form_filler import EnhancedFormFiller
 from .qa import QAAgent
+from .notifications.digest_email import DigestEmailSender
 
 # Persistence imports
 from persistence.src.applications import ApplicationRepository
@@ -40,7 +41,7 @@ profile_matcher: Optional[ProfileMatcher] = None
 effort_planner: Optional[EffortPlanner] = None
 job_ingestion: Optional[JobIngestionService] = None
 kb: Optional[KnowledgeBase] = None
-orchestrator: Optional[Orchestrator] = None
+orchestrator = None
 application_runner: Optional[ApplicationRunner] = None
 qa_agent: Optional[QAAgent] = None
 
@@ -79,7 +80,11 @@ async def startup_event():
 
     # Initialize RAG (for profile data)
     logger.info("Loading RAG engine...")
-    kb = KnowledgeBase()
+    try:
+        kb = KnowledgeBase()
+    except Exception as e:
+        logger.warning(f"RAG engine failed to initialize: {e}")
+        kb = None
 
     # Initialize Profile Matcher
     logger.info("Initializing profile matcher...")
@@ -88,14 +93,26 @@ async def startup_event():
     # Load profile from RAG or profile_data
     try:
         # Try to get profile from RAG
-        profile_chunks = kb.search_relevant_info("Complete user profile and CV", limit=5)
-        profile_text = "\n\n".join(profile_chunks)
+        if kb:
+            profile_chunks = kb.search_relevant_info("Complete user profile and CV", limit=5)
+            profile_text = "\n\n".join(profile_chunks)
+        else:
+            # Fallback: Load from profile_data/CVs directory
+            profile_text = ""
+            cv_path = os.path.join("profile_data", "CVs")
+            if os.path.exists(cv_path):
+                for filename in os.listdir(cv_path):
+                    if filename.endswith((".md", ".txt")):
+                        with open(os.path.join(cv_path, filename), 'r') as f:
+                            profile_text += f.read() + "\n\n"
+                if profile_text:
+                    logger.info(f"Loaded profile from {cv_path} directory")
 
         if profile_text:
             profile_matcher.load_profile(profile_text)
-            logger.info(f"Profile loaded from RAG ({len(profile_text)} chars)")
+            logger.info(f"Profile loaded ({len(profile_text)} chars)")
         else:
-            logger.warning("No profile found in RAG, matcher not initialized")
+            logger.warning("No profile found in RAG or profile_data, matcher not initialized")
     except Exception as e:
         logger.warning(f"Could not load profile: {e}")
 
@@ -128,9 +145,20 @@ async def startup_event():
         form_filler = EnhancedFormFiller(answer_gen)
 
         # Persistence Repos
-        app_repo = ApplicationRepository()
-        event_repo = EventRepository()
-        session_repo = SessionRepository()
+        # Persistence Repos
+        try:
+            # Try to initialize real repositories
+            # We attempt a simple operation or just init to see if DB is reachable if init does connection checks
+            app_repo = ApplicationRepository()
+            event_repo = EventRepository()
+            session_repo = SessionRepository()
+            logger.info("Persistence repositories initialized")
+        except Exception as db_err:
+            logger.warning(f"Database connection failed: {db_err}. Using MOCK repositories.")
+            from .mocks import MockApplicationRepository, MockEventRepository, MockSessionRepository
+            app_repo = MockApplicationRepository()
+            event_repo = MockEventRepository()
+            session_repo = MockSessionRepository()
 
         if profile_matcher and effort_planner:
             application_runner = ApplicationRunner(
@@ -150,11 +178,24 @@ async def startup_event():
         logger.error(f"Failed to initialize Application Runner: {e}")
 
     # Initialize Orchestrator
-    orchestrator = Orchestrator()
+    orchestrator = get_orchestrator()
 
     # Initialize Session Manager
     global session_manager
-    session_manager = SessionManager()
+    try:
+        digest_sender = DigestEmailSender()
+        session_manager = SessionManager(digest_sender=digest_sender)
+        recovered_sessions = session_manager.recover_active_sessions()
+        if recovered_sessions:
+            logger.info("Session Manager initialized and recovered %d interrupted sessions", len(recovered_sessions))
+        else:
+            logger.info("Session Manager initialized")
+    except Exception as e:
+        logger.warning(f"Session Manager failed to initialize: {e}. Sessions disabled.")
+        session_manager = None
+
+    if session_manager and application_runner:
+        application_runner.set_session_manager(session_manager)
 
     logger.info("Agent system ready")
 

@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: shared_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-nyx_venatrix}
+      POSTGRES_MULTIPLE_DATABASES: nyx_venatrix,saturnus
+    ports:
+      - "5432:5432"
+    volumes:
+      - shared_postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - shared_db_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  shared_postgres_data:
+    name: shared_postgres_data
+
+networks:
+  shared_db_network:
+    name: shared_db_network
+    driver: bridge

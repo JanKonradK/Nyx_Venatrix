@@ -9,7 +9,7 @@
 
 ---
 
-## �️ Technical Stack
+## Technical Stack
 
 This project leverages a modern, high-performance stack designed for scalability and resilience:
 
@@ -30,7 +30,7 @@ This project leverages a modern, high-performance stack designed for scalability
 
 ---
 
-## 💡 Engineering Challenges & Learnings
+## Engineering Challenges & Learnings
 
 Building Nyx Venatrix presented several significant engineering hurdles that provided deep insights into distributed systems and AI agent design.
 
@@ -51,7 +51,7 @@ Building Nyx Venatrix presented several significant engineering hurdles that pro
 
 ---
 
-## � Setup & Installation
+## Setup & Installation
 
 ### Prerequisites
 *   Docker & Docker Compose
@@ -67,10 +67,13 @@ The easiest way to explore the system is via Docker:
 cp .env.example .env
 # Edit .env and add your API keys (OPENAI_API_KEY, GROK_API_KEY)
 
-# 2. Launch Stack
+# 2. Start the shared PostgreSQL stack (accessible by Nyx + Saturnus)
+docker compose -f docker-compose.shared-db.yml up -d
+
+# 3. Launch Nyx services (backend, agent, frontend)
 docker compose up -d
 
-# 3. Access Services
+# 4. Access Services
 # Backend API: http://localhost:3000
 # Agent Service: http://localhost:8000
 # Frontend: http://localhost:5173
@@ -83,6 +86,7 @@ For deep inspection and modification:
 ```bash
 # 1. Start Infrastructure (DB, Redis, Qdrant)
 docker compose -f docker-compose.db.yml up -d
+# (or run only the shared PostgreSQL stack via docker-compose.shared-db.yml)
 
 # 2. Install Dependencies
 ./scripts/dev-setup.sh

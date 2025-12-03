@@ -104,7 +104,7 @@ fastify.get<{ Params: { id: string } }>(
         const { id } = request.params;
 
         try {
-            const job = await jobService.getById(parseInt(id, 10));
+            const job = await jobService.getById(id);
 
             if (!job) {
                 return reply.code(404).send({ error: 'Job not found' });
