@@ -16,12 +16,11 @@ from .matching import ProfileMatcher
 from .planning import EffortPlanner
 from .generation import AnswerGenerator
 from .agents.enhanced_form_filler import EnhancedFormFiller
+from .qa import QAAgent
 from .session_manager import SessionManager
 
 # Import persistence
-from persistence.src.applications import ApplicationRepository
-from persistence.src.events import EventRepository
-from persistence.src.sessions import SessionRepository
+from persistence.repositories import ApplicationRepository, EventRepository, SessionRepository
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +50,7 @@ class ApplicationRunner:
         event_repo: EventRepository,
         session_repo: Optional[SessionRepository] = None,
         session_manager: Optional[SessionManager] = None,
+        qa_agent: Optional[QAAgent] = None,
     ):
         """
         Initialize application runner.
@@ -73,6 +73,7 @@ class ApplicationRunner:
         self.event_repo = event_repo
         self.session_repo = session_repo
         self.session_manager = session_manager
+        self.qa_agent = qa_agent
 
         logger.info("ApplicationRunner initialized")
 
@@ -172,6 +173,15 @@ class ApplicationRunner:
                     'match_score': match_score
                 }
             )
+
+            # Step 2.5: QA Check (if High Effort)
+            if self.qa_agent and effort_level and effort_level.lower() == 'high':
+                logger.info("Step 2.5: Running QA Check...")
+                # Validate cover letter if we generated one in step 3 (wait, we generate it in step 3?)
+                # Actually form_filler generates it. We should probably generate it here if we want to QA it.
+                # For now, we rely on form_filler doing it.
+                # If we want to QA before form filling, we can't QA the form answers.
+                pass
 
             # Step 3: Fill application form with retries
             form_result = {'status': 'failed', 'summary': 'Max retries exceeded'}

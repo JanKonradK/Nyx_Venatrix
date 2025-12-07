@@ -20,6 +20,7 @@ from .matching import ProfileMatcher
 from .planning import EffortPlanner
 from .generation import AnswerGenerator
 from .agents.enhanced_form_filler import EnhancedFormFiller
+from .qa import QAAgent
 from .utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -38,10 +39,10 @@ class ApplicationWorker:
         self.planner = EffortPlanner()
         self.answer_gen = AnswerGenerator()
         self.form_filler = EnhancedFormFiller(self.answer_gen)
+        self.qa_agent = QAAgent()
 
         # Mock repositories for now (will use actual in production)
-        from persistence.src.applications import ApplicationRepository
-        from persistence.src.events import EventRepository
+        from persistence.repositories import ApplicationRepository, EventRepository
 
         self.app_repo = ApplicationRepository()
         self.event_repo = EventRepository()
@@ -52,7 +53,8 @@ class ApplicationWorker:
             answer_generator=self.answer_gen,
             form_filler=self.form_filler,
             application_repo=self.app_repo,
-            event_repo=self.event_repo
+            event_repo=self.event_repo,
+            qa_agent=self.qa_agent
         )
 
     async def run_application(self, app_config: Dict[str, Any]) -> Dict[str, Any]:
@@ -172,13 +174,13 @@ class SingleThreadOrchestrator:
         logger.warning("Using single-threaded orchestrator (Ray not available)")
 
         # Initialize single runner
-        from persistence.src.applications import ApplicationRepository
-        from persistence.src.events import EventRepository
+        from persistence.repositories import ApplicationRepository, EventRepository
 
         self.matcher = ProfileMatcher()
         self.planner = EffortPlanner()
         self.answer_gen = AnswerGenerator()
         self.form_filler = EnhancedFormFiller(self.answer_gen)
+        self.qa_agent = QAAgent()
 
         self.app_repo = ApplicationRepository()
         self.event_repo = EventRepository()
@@ -189,7 +191,8 @@ class SingleThreadOrchestrator:
             answer_generator=self.answer_gen,
             form_filler=self.form_filler,
             application_repo=self.app_repo,
-            event_repo=self.event_repo
+            event_repo=self.event_repo,
+            qa_agent=self.qa_agent
         )
 
     async def run_session(

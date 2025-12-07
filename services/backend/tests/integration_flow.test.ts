@@ -1,6 +1,6 @@
 // Simple integration test skeleton
 
-import { AgentClient } from '../src/integrations/agent';
+import { AgentClient } from '../src/integrations/agent_client';
 
 async function runIntegrationTest() {
     console.log('🚀 Running Integration Test: Backend -> Agent Flow');

@@ -18,9 +18,7 @@ from .qa import QAAgent
 from .notifications.digest_email import DigestEmailSender
 
 # Persistence imports
-from persistence.src.applications import ApplicationRepository
-from persistence.src.events import EventRepository
-from persistence.src.sessions import SessionRepository
+from persistence.repositories import ApplicationRepository, EventRepository, SessionRepository
 
 from .utils.logger import setup_logger
 
@@ -138,29 +136,37 @@ async def startup_event():
     except Exception as e:
         logger.warning(f"Could not load QA Agent: {e}")
 
+    # Initialize Persistence Repositories
+    app_repo = None
+    event_repo = None
+    session_repo = None
+
+    try:
+        # Initialize a long-lived session for the singleton services
+        from persistence.database import SessionLocal
+        db_session = SessionLocal()
+
+        app_repo = ApplicationRepository(db_session)
+        event_repo = EventRepository(db_session)
+        session_repo = SessionRepository(db_session)
+        logger.info("Persistence repositories initialized")
+    except Exception as db_err:
+        logger.warning(f"Database connection failed: {db_err}. Using MOCK repositories.")
+        try:
+            from .mocks import MockApplicationRepository, MockEventRepository, MockSessionRepository
+            app_repo = MockApplicationRepository()
+            event_repo = MockEventRepository()
+            session_repo = MockSessionRepository()
+        except ImportError:
+            logger.error("Mock repositories not found. Session Manager will fail.")
+
     # Initialize Application Runner Components
     logger.info("Initializing Application Runner...")
     try:
         answer_gen = AnswerGenerator(model=os.getenv('AGENT_MODEL', 'grok-beta'))
         form_filler = EnhancedFormFiller(answer_gen)
 
-        # Persistence Repos
-        # Persistence Repos
-        try:
-            # Try to initialize real repositories
-            # We attempt a simple operation or just init to see if DB is reachable if init does connection checks
-            app_repo = ApplicationRepository()
-            event_repo = EventRepository()
-            session_repo = SessionRepository()
-            logger.info("Persistence repositories initialized")
-        except Exception as db_err:
-            logger.warning(f"Database connection failed: {db_err}. Using MOCK repositories.")
-            from .mocks import MockApplicationRepository, MockEventRepository, MockSessionRepository
-            app_repo = MockApplicationRepository()
-            event_repo = MockEventRepository()
-            session_repo = MockSessionRepository()
-
-        if profile_matcher and effort_planner:
+        if profile_matcher and effort_planner and app_repo and event_repo and session_repo:
             application_runner = ApplicationRunner(
                 profile_matcher=profile_matcher,
                 effort_planner=effort_planner,
@@ -168,7 +174,8 @@ async def startup_event():
                 form_filler=form_filler,
                 application_repo=app_repo,
                 event_repo=event_repo,
-                session_repo=session_repo
+                session_repo=session_repo,
+                qa_agent=qa_agent
             )
             logger.info("Application Runner initialized")
         else:
@@ -184,7 +191,8 @@ async def startup_event():
     global session_manager
     try:
         digest_sender = DigestEmailSender()
-        session_manager = SessionManager(digest_sender=digest_sender)
+        # Pass the initialized session_repo to SessionManager
+        session_manager = SessionManager(digest_sender=digest_sender, session_repo=session_repo)
         recovered_sessions = session_manager.recover_active_sessions()
         if recovered_sessions:
             logger.info("Session Manager initialized and recovered %d interrupted sessions", len(recovered_sessions))
@@ -205,8 +213,8 @@ async def shutdown_event():
     """Cleanup resources on shutdown"""
     logger.info("Shutting down agent...")
     try:
-        from persistence.src.database import close_db
-        close_db()
+        from persistence.database import engine
+        engine.dispose()
         logger.info("Database connection closed")
     except Exception as e:
         logger.error(f"Error closing database: {e}")

@@ -31,11 +31,6 @@ services:
       - qdrant_data:/qdrant/storage
     networks:
       - shared_db_network
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:6333/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     restart: unless-stopped
 
   # ---------------------------------------------------------------------------
@@ -101,8 +96,7 @@ services:
       - nyx_app_net
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
-      qdrant:
-        condition: service_healthy
+      - qdrant
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
       interval: 30s

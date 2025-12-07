@@ -854,3 +854,50 @@ BEGIN
     RAISE WARNING 'Expected at least 40 tables, found %', table_count;
   END IF;
 END $$;
+
+-- Backend Compatibility View
+CREATE OR REPLACE VIEW jobs AS
+SELECT
+    jp.id,
+    jp.job_title as title,
+    c.name as company,
+    c.name as company_name,
+    jp.raw_location as location,
+    jp.source_url as url,
+    jp.description_clean as description,
+    jp.created_at,
+    jp.updated_at,
+    COALESCE(a.application_status, 'new') as status,
+    a.id as application_id,
+    a.user_id
+FROM job_posts jp
+LEFT JOIN companies c ON jp.company_id = c.id
+LEFT JOIN applications a ON jp.id = a.job_post_id;
+
+-- Create INSTEAD OF INSERT trigger for jobs view compatibility
+CREATE OR REPLACE FUNCTION insert_job_through_view()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO job_posts (
+        id, 
+        source_url, 
+        source_uuid, 
+        status
+    )
+    VALUES (
+        gen_random_uuid(),
+        NEW.url,  -- mapped from original_url in query
+        NEW.source, -- simplified mapping
+        'new'
+    )
+    RETURNING id, source_url, source_uuid, 'queued'::varchar, created_at, updated_at
+    INTO NEW.id, NEW.url, NEW.source, NEW.status, NEW.created_at, NEW.updated_at;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER allow_insert_on_jobs
+    INSTEAD OF INSERT ON jobs
+    FOR EACH ROW
+    EXECUTE FUNCTION insert_job_through_view();

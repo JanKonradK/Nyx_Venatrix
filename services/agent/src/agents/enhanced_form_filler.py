@@ -115,21 +115,16 @@ class EnhancedFormFiller(BaseAgent):
         if self.captcha_solver:
             tools.append(self._solve_captcha)
 
+        from ..utils.browser_config import get_browser_config
+        browser_config = get_browser_config()
+
         try:
             # Execute with browser-use
-            # Note: browser-use will use headless mode by default in WSL
             browser_agent = BrowserAgent(
                 task=task,
                 llm=self.llm,
                 # tools=tools, # Uncomment when browser_use supports tools list directly
-                browser_kwargs={
-                    'headless': True,  # Force headless in WSL
-                    'args': [
-                        '--no-sandbox',
-                        '--disable-setuid-sandbox',
-                        '--disable-dev-shm-usage',
-                    ]
-                }
+                browser_kwargs=browser_config.browser_kwargs
             )
 
             logger.info("Starting browser automation (headless mode)...")

@@ -7,8 +7,7 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-nyx_venatrix}
-      POSTGRES_MULTIPLE_DATABASES: nyx_venatrix,saturnus
+      # POSTGRES_DB is overridden by the init script creating multiple DBs
     ports:
       - "5432:5432"
     volumes:
@@ -17,7 +16,7 @@ services:
     networks:
       - shared_db_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,6 +25,7 @@ services:
 volumes:
   shared_postgres_data:
     name: shared_postgres_data
+    external: false
 
 networks:
   shared_db_network:

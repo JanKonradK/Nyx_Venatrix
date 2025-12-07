@@ -71,6 +71,53 @@ class CaptchaSolver:
             print(f"❌ CAPTCHA solver error: {e}")
             return None
 
+    async def solve_hcaptcha(self, site_key: str, page_url: str) -> Optional[str]:
+        """Solves hCaptcha"""
+        return await self._solve_generic(method='hcaptcha', sitekey=site_key, pageurl=page_url)
+
+    async def solve_recaptcha_v3(self, site_key: str, page_url: str, action: str = 'verify') -> Optional[str]:
+        """Solves reCAPTCHA v3"""
+        return await self._solve_generic(method='userrecaptcha', version='v3', googlekey=site_key, pageurl=page_url, action=action)
+
+    async def solve_turnstile(self, site_key: str, page_url: str) -> Optional[str]:
+        """Solves Cloudflare Turnstile"""
+        return await self._solve_generic(method='turnstile', sitekey=site_key, pageurl=page_url)
+
+    async def _solve_generic(self, **kwargs) -> Optional[str]:
+        """Generic solver for 2captcha text-based captchas"""
+        if not self.api_key:
+            return None
+
+        params = {
+            'key': self.api_key,
+            'json': 1,
+            **kwargs
+        }
+
+        try:
+            submit_resp = requests.post(self.base_url, data=params, timeout=30)
+            submit_data = submit_resp.json()
+
+            if submit_data.get('status') != 1:
+                print(f"❌ CAPTCHA submit failed: {submit_data.get('request')}")
+                return None
+
+            captcha_id = submit_data.get('request')
+
+            for _ in range(24):
+                time.sleep(5)
+                res_resp = requests.get(self.result_url, params={'key': self.api_key, 'action': 'get', 'id': captcha_id, 'json': 1}, timeout=30)
+                res_data = res_resp.json()
+
+                if res_data.get('status') == 1:
+                    return res_data.get('request')
+                elif res_data.get('request') != 'CAPCHA_NOT_READY':
+                    return None
+            return None
+        except Exception as e:
+            print(f"❌ Solver exception: {e}")
+            return None
+
     async def solve_image_captcha(self, image_base64: str) -> Optional[str]:
         """
         Solves image-based CAPTCHA (e.g., "select all traffic lights").

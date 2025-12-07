@@ -48,7 +48,7 @@ prometheus-client==0.21.0
 
 # Database
 psycopg2-binary==2.9.11
-SQLAlchemy==2.0.44
+SQLAlchemy[postgresql]==2.0.44
 qdrant-client==1.16.0
 
 # Vector Store & Embeddings

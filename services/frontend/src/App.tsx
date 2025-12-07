@@ -22,7 +22,7 @@ function App() {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/jobs`);
             const data = await res.json();
-            setJobs(data);
+            setJobs(data.jobs || []);
         } catch (err) {
             console.error(err);
         }

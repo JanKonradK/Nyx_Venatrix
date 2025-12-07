@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 from uuid import UUID
 
-from persistence.src.sessions import SessionRepository
+from persistence.repositories import SessionRepository
 
 from .notifications.digest_email import DigestEmailSender, SessionStats
 
