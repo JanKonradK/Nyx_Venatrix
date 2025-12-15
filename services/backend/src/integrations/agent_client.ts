@@ -5,20 +5,15 @@
 import axios from 'axios';
 
 export interface AgentJobRequest {
-    url: string;
-    keywords?: string[];
-    effort_mode?: 'LOW' | 'MEDIUM' | 'HIGH';
+    job_post_id: string;
+    mode: 'review' | 'auto';
 }
 
 export interface AgentJobResponse {
+    job_post_id: string;
     status: string;
-    data: {
-        output: string;
-        cost_usd: number;
-        tokens_input: number;
-        tokens_output: number;
-        error?: string;
-    };
+    // Data field might be optional or different in new response
+    data?: any;
 }
 
 export class AgentClient {
@@ -33,7 +28,7 @@ export class AgentClient {
     private readonly FAILURE_THRESHOLD = 3;
     private readonly RESET_TIMEOUT = 60000; // 1 minute
 
-    async applyToJob(jobRequest: AgentJobRequest): Promise<AgentJobResponse['data']> {
+    async applyToJob(jobRequest: AgentJobRequest): Promise<AgentJobResponse> {
         if (this.isOpen()) {
             throw new Error('Circuit breaker is OPEN: Agent service is down.');
         }
@@ -46,7 +41,7 @@ export class AgentClient {
             );
 
             this.reset();
-            return response.data.data;
+            return response.data;
         } catch (error: any) {
             this.recordFailure();
             console.error('Agent service error:', error.message);

@@ -46,35 +46,23 @@ export class JobQueueManager {
 
             // Call agent service
             const result = await this.agentClient.applyToJob({
-                url,
-                keywords: []
+                job_post_id: job_id,
+                mode: 'review' // Default mode
             });
 
-            // Check if agent returned an error
-            if (result.error) {
-                await this.jobService.updateStatus(job_id, JobStatus.FAILED, {
-                    error_message: result.error,
-                    cost_usd: result.cost_usd,
-                    tokens_input: result.tokens_input,
-                    tokens_output: result.tokens_output
-                });
-                return;
-            }
+            // Since agent is async (Ray), we just confirm it's queued
+            console.log(`✅ Job ${job_id} queued in agent: ${result.status}`);
 
-            // Update status to applied with cost data
-            await this.jobService.updateStatus(job_id, JobStatus.APPLIED, {
-                cost_usd: result.cost_usd,
-                tokens_input: result.tokens_input,
-                tokens_output: result.tokens_output
-            });
+            // We leave the job as IN_PROGRESS or set to APPLIED if we consider handoff as 'applied'
+            // For now, let's keep it IN_PROGRESS until a webhook or polling updates it, 
+            // or just assume it is being handled. 
+            // The frontend should check Application status separately.
 
-            console.log(`✅ Job ${job_id} completed successfully. Cost: $${result.cost_usd}`);
         } catch (error: any) {
-            console.error(`❌ Job ${job_id} failed:`, error.message);
+            console.error(`❌ Job ${job_id} failed to queue:`, error.message);
 
             await this.jobService.updateStatus(job_id, JobStatus.FAILED, {
-                error_message: error.message,
-                cost_usd: 0
+                error_message: error.message
             });
         }
     }

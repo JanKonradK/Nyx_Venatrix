@@ -13,17 +13,19 @@ export enum JobStatus {
 
 export interface Job {
     id: string;
-    original_url: string;
-    canonical_url: string;
-    source: string;
-    source_platform: string;
+    url: string;
+    title: string | null;
+    company_name: string | null;
+    description: string | null;
     status: JobStatus;
+    user_id: string | null;
+    created_at: Date;
+    updated_at: Date;
+    // Optional / Metadata
     cost_usd?: number;
     tokens_input?: number;
     tokens_output?: number;
     error_message?: string;
-    created_at: Date;
-    updated_at: Date;
 }
 
 export interface CreateJobParams {

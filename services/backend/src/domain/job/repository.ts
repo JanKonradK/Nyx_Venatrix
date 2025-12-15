@@ -8,14 +8,14 @@ import { CreateJobParams, Job, JobStatus } from './entities';
 export class JobRepository {
     constructor(private pool: Pool) { }
 
-    async create(params: CreateJobParams): Promise<Job> {
+    async create(params: CreateJobParams, userId: string | null): Promise<Job> {
         const { url, source = 'webapp', notes } = params;
 
         const result = await this.pool.query(
-            `INSERT INTO jobs(original_url, canonical_url, source, source_platform, status)
-             VALUES($1, $1, $2, 'unknown', 'queued')
+            `INSERT INTO jobs (url, title, status, user_id)
+             VALUES ($1, 'Unknown', 'queued', $2)
              RETURNING *`,
-            [url, source]
+            [url, userId]
         );
 
         return result.rows[0];

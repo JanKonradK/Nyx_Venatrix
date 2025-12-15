@@ -89,7 +89,7 @@ fastify.post<{ Body: { url: string; notes?: string; source?: string } }>(
         }
 
         try {
-            const result = await jobService.createAndQueue({ url, notes, source });
+            const result = await jobService.createAndQueue({ url, notes, source }, null);
             return result;
         } catch (err: any) {
             fastify.log.error(err);
@@ -127,6 +127,73 @@ fastify.get('/jobs', async (request) => {
         return { error: err.message };
     }
 });
+
+// Application routes
+fastify.get<{ Params: { jobPostId: string } }>(
+    '/applications/:jobPostId/events',
+    async (request, reply) => {
+        const { jobPostId } = request.params;
+        try {
+            const { rows } = await dbPool.query(
+                `SELECT event_type, payload, created_at
+                 FROM application_events
+                 WHERE job_post_id = $1
+                 ORDER BY created_at ASC`,
+                [jobPostId]
+            );
+            return { events: rows };
+        } catch (err: any) {
+            fastify.log.error(err);
+            return reply.code(500).send({ error: err.message });
+        }
+    }
+);
+
+fastify.post<{ Params: { jobPostId: string } }>(
+    '/applications/:jobPostId/approve',
+    async (request, reply) => {
+        const { jobPostId } = request.params;
+        try {
+            await dbPool.query(
+                `UPDATE applications SET status = 'applied', updated_at = now()
+                 WHERE job_post_id = $1`,
+                [jobPostId]
+            );
+            await dbPool.query(
+                `INSERT INTO application_events (job_post_id, event_type, payload)
+                 VALUES ($1, 'MANUAL_APPROVE', '{}'::jsonb)`,
+                [jobPostId]
+            );
+            return reply.code(204).send();
+        } catch (err: any) {
+            fastify.log.error(err);
+            return reply.code(500).send({ error: err.message });
+        }
+    }
+);
+
+fastify.post<{ Params: { jobPostId: string } }>(
+    '/applications/:jobPostId/discard',
+    async (request, reply) => {
+        const { jobPostId } = request.params;
+        try {
+            await dbPool.query(
+                `UPDATE applications SET status = 'skipped_manually', updated_at = now()
+                 WHERE job_post_id = $1`,
+                [jobPostId]
+            );
+            await dbPool.query(
+                `INSERT INTO application_events (job_post_id, event_type, payload)
+                 VALUES ($1, 'MANUAL_DISCARD', '{}'::jsonb)`,
+                [jobPostId]
+            );
+            return reply.code(204).send();
+        } catch (err: any) {
+            fastify.log.error(err);
+            return reply.code(500).send({ error: err.message });
+        }
+    }
+);
 
 // Start server
 const start = async () => {

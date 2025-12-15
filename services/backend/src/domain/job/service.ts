@@ -20,15 +20,15 @@ export class JobService {
         this.jobQueue = queue;
     }
 
-    async createAndQueue(params: CreateJobParams): Promise<{ job_id: string; status: string }> {
+    async createAndQueue(params: CreateJobParams, userId: string | null): Promise<{ job_id: string; status: string }> {
         // Create job in database
-        const job = await this.repository.create(params);
+        const job = await this.repository.create(params, userId);
 
         if (this.jobQueue) {
             // Add to processing queue
             await this.jobQueue.add('process_job', {
                 job_id: job.id,
-                url: job.original_url
+                url: job.url
             });
         } else {
             console.warn('Job created but not queued: Queue not initialized');
