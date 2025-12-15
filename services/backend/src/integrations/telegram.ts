@@ -51,7 +51,7 @@ export class TelegramBot {
                     const result = await this.jobService.createAndQueue({
                         url: text,
                         source: 'telegram'
-                    });
+                    }, null);
 
                     ctx.reply(
                         `✅ Job queued successfully!\n\n` +

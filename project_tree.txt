@@ -1,0 +1,269 @@
+.
+├── LICENSE
+├── README.md
+├── config
+│   ├── README.md
+│   ├── effort_policy.yml
+│   ├── profile.json
+│   └── stealth.yml
+├── conftest.py
+├── docker-compose.db.yml
+├── docker-compose.shared-db.yml
+├── docker-compose.yml
+├── docs
+│   ├── ARCHITECTURE_REVIEW_AND_PLAN.md
+│   ├── COMPLETED_CHANGES.md
+│   ├── COMPREHENSIVE_IMPLEMENTATION_PLAN.md
+│   ├── CONTRIBUTING.md
+│   ├── DATABASE_SCHEMA.md
+│   ├── DOCKER_WSL2_SETUP.md
+│   ├── PROJECT_AUDIT_AND_FIXES.md
+│   └── QUICKSTART.md
+├── infrastructure
+│   ├── README.md
+│   ├── docker
+│   │   ├── agent.Dockerfile
+│   │   ├── analytics.Dockerfile
+│   │   ├── backend.Dockerfile
+│   │   └── frontend.Dockerfile
+│   ├── docker-compose.yml
+│   └── postgres
+│       ├── 001_effort_modes_captcha_tracking.sql.disabled
+│       ├── 001_schema.sql
+│       ├── 003_seed_data.sql
+│       ├── README.md
+│       └── init-scripts
+│           ├── 000_create_databases.sh
+│           ├── 001_schema.sql
+│           └── 003_seed_data.sql
+├── main.py
+├── package-lock.json
+├── persistence
+│   ├── __init__.py
+│   └── src
+│       ├── __init__.py
+│       ├── applications.py
+│       ├── base.py
+│       ├── database.py
+│       ├── events.py
+│       ├── models.py
+│       └── sessions.py
+├── profile_data
+│   ├── Academic_Info
+│   │   └── education.md
+│   ├── CVs
+│   │   ├── john_doe.aux
+│   │   ├── john_doe.out
+│   │   ├── john_doe.pdf
+│   │   ├── john_doe.tex
+│   │   └── resume.md
+│   ├── Other_Info
+│   │   └── manifesto.md
+│   ├── Personal_Info
+│   │   ├── bio.md
+│   │   └── bio.txt
+│   ├── Professional_Info
+│   │   └── experience.md
+│   └── README.md
+├── project_tree.txt
+├── scripts
+│   ├── cli_test_ingestion.py
+│   ├── dev-setup.sh
+│   ├── run_migrations.py
+│   ├── setup_docker.sh
+│   └── start-local.sh
+├── services
+│   ├── agent
+│   │   ├── README.md
+│   │   ├── __init__.py
+│   │   ├── persistence
+│   │   │   ├── __init__.py
+│   │   │   ├── database.py
+│   │   │   ├── models
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── application.py
+│   │   │   │   ├── base.py
+│   │   │   │   ├── event.py
+│   │   │   │   ├── job_post.py
+│   │   │   │   └── session.py
+│   │   │   └── repositories
+│   │   │       ├── __init__.py
+│   │   │       ├── applications.py
+│   │   │       ├── base.py
+│   │   │       ├── events.py
+│   │   │       └── sessions.py
+│   │   ├── requirements.txt
+│   │   ├── src
+│   │   │   ├── agent_logic.py
+│   │   │   ├── agent_prompts.py
+│   │   │   ├── agents
+│   │   │   │   ├── adapters
+│   │   │   │   │   ├── base.py
+│   │   │   │   │   ├── greenhouse.py
+│   │   │   │   │   └── workday.py
+│   │   │   │   ├── base.py
+│   │   │   │   ├── enhanced_form_filler.py
+│   │   │   │   ├── form_filler.py
+│   │   │   │   ├── reviewer.py
+│   │   │   │   ├── scraper.py
+│   │   │   │   └── writer.py
+│   │   │   ├── application_engine.py
+│   │   │   ├── application_runner.py
+│   │   │   ├── captcha
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── solver.py
+│   │   │   ├── concurrency
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── ray_worker_pool.py
+│   │   │   ├── decision_engine.py
+│   │   │   ├── discovery
+│   │   │   │   └── agent.py
+│   │   │   ├── generation
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── answer_generator.py
+│   │   │   ├── job_ingestion.py
+│   │   │   ├── main.py
+│   │   │   ├── matching
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── profile_matcher.py
+│   │   │   ├── mocks.py
+│   │   │   ├── notifications
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── digest_email.py
+│   │   │   │   └── telegram_notifier.py
+│   │   │   ├── observability
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── langfuse_tracker.py
+│   │   │   │   └── mlflow_tracker.py
+│   │   │   ├── orchestrator.py
+│   │   │   ├── planning
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── effort_planner.py
+│   │   │   ├── profile_loader.py
+│   │   │   ├── qa
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── qa_agent.py
+│   │   │   ├── rag_engine.py
+│   │   │   ├── session
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── session_manager.py
+│   │   │   ├── session_manager.py
+│   │   │   ├── stealth
+│   │   │   │   ├── stealth_manager.py
+│   │   │   │   └── timing.py
+│   │   │   └── utils
+│   │   │       ├── browser_config.py
+│   │   │       ├── captcha_solver.py
+│   │   │       ├── domain_rate_limiter.py
+│   │   │       ├── enhanced_captcha_solver.py
+│   │   │       ├── logger.py
+│   │   │       ├── salary_oracle.py
+│   │   │       └── telegram_notifier.py
+│   │   └── tests
+│   │       ├── test_agent.py
+│   │       ├── test_nyx_venatrix.py
+│   │       └── test_phase_2_3_integration.py
+│   ├── analytics
+│   │   ├── main.py
+│   │   └── requirements.txt
+│   ├── backend
+│   │   ├── README.md
+│   │   ├── migrations
+│   │   │   └── 001_initial_schema.sql
+│   │   ├── package-lock.json
+│   │   ├── package.json
+│   │   ├── scripts
+│   │   │   └── ingest_profile.ts
+│   │   ├── src
+│   │   │   ├── app.ts
+│   │   │   ├── domain
+│   │   │   │   ├── application
+│   │   │   │   │   └── entity.ts
+│   │   │   │   ├── job
+│   │   │   │   │   ├── entities.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── repository.ts
+│   │   │   │   │   └── service.ts
+│   │   │   │   ├── lifecycle.ts
+│   │   │   │   └── profile
+│   │   │   │       └── entity.ts
+│   │   │   ├── infra
+│   │   │   │   └── index.ts
+│   │   │   ├── integrations
+│   │   │   │   ├── agent_client.ts
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── kdb
+│   │   │   │   │   ├── client.ts
+│   │   │   │   │   └── salary_fetcher.ts
+│   │   │   │   └── telegram.ts
+│   │   │   ├── llm
+│   │   │   │   ├── client.ts
+│   │   │   │   └── index.ts
+│   │   │   ├── queues
+│   │   │   │   ├── index.ts
+│   │   │   │   └── job-queue.ts
+│   │   │   └── utils
+│   │   │       └── ab_test.ts
+│   │   ├── tests
+│   │   │   └── integration_flow.test.ts
+│   │   └── tsconfig.json
+│   ├── dashboard
+│   │   ├── __init__.py
+│   │   └── src
+│   │       ├── __init__.py
+│   │       └── main.py
+│   ├── frontend
+│   │   ├── index.html
+│   │   ├── package-lock.json
+│   │   ├── package.json
+│   │   ├── postcss.config.js
+│   │   ├── src
+│   │   │   ├── App.tsx
+│   │   │   ├── index.css
+│   │   │   ├── main.tsx
+│   │   │   └── vite-env.d.ts
+│   │   ├── tailwind.config.js
+│   │   ├── tsconfig.json
+│   │   ├── tsconfig.node.json
+│   │   └── vite.config.ts
+│   ├── kdb
+│   │   └── q
+│   │       ├── salary.q
+│   │       └── salary_oracle.q
+│   └── persistence
+│       ├── README.md
+│       ├── __init__.py
+│       ├── requirements.txt
+│       └── src
+│           ├── __init__.py
+│           ├── applications.py
+│           ├── captcha_events.py
+│           ├── companies.py
+│           ├── database.py
+│           ├── domain_limits.py
+│           ├── events.py
+│           ├── jobs.py
+│           ├── model_usage.py
+│           ├── qa.py
+│           ├── sessions.py
+│           └── users.py
+└── tests
+    ├── captcha_fallback_test.py
+    ├── demo_form_fill.py
+    ├── e2e_workflow.py
+    ├── example_target_site.html
+    ├── production_demo.py
+    ├── run_simulation.py
+    ├── simulation_run.py
+    ├── simulation_target.html
+    ├── test_advanced_features.py
+    ├── test_agents.py
+    ├── test_chrome_cdp.py
+    ├── test_database.py
+    ├── test_effort_planner.py
+    ├── test_orchestrator.py
+    ├── test_persistence.py
+    ├── test_qa_agent.py
+    └── test_services.py
+
+62 directories, 205 files
