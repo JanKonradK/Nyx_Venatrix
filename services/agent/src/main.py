@@ -5,7 +5,7 @@ from typing import Optional, List, Dict
 from uuid import uuid4, UUID
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 
-from .orchestrator import get_orchestrator
+from .orchestrator import RayOrchestrator
 from .session_manager import SessionManager
 from .rag_engine import KnowledgeBase
 from .matching import ProfileMatcher, load_profile_from_resume
@@ -54,6 +54,14 @@ class JobRequest(BaseModel):
     company: Optional[str] = None
     description_clean: Optional[str] = None
 
+
+class ApplyRequest(BaseModel):
+    job_post_id: str
+    mode: str = "review"  # "review" or "auto"
+
+class ApplyResponse(BaseModel):
+    job_post_id: str
+    status: str
 
 class JobMetadata(BaseModel):
     """Metadata for testing without browser scraping"""
@@ -185,7 +193,7 @@ async def startup_event():
         logger.error(f"Failed to initialize Application Runner: {e}")
 
     # Initialize Orchestrator
-    orchestrator = get_orchestrator()
+    orchestrator = RayOrchestrator()
 
     # Initialize Session Manager
     global session_manager
@@ -264,69 +272,22 @@ async def stop_session(session_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/apply")
-async def apply_to_job(job: JobRequest):
+@app.post("/apply", response_model=ApplyResponse)
+async def apply_job(req: ApplyRequest):
     """
-    Execute the full automation workflow: match → plan → execute.
-
-    This endpoint:
-    1. Analyzes the target context (via URL or provided metadata).
-    2. Computes a relevance score.
-    3. Plans the execution effort (Low/Medium/High).
-    4. Generates content and interacts with the target site.
+    Submit a job for application process via Ray Orchestrator.
     """
     AGENT_RUNS.inc()
+    
+    if not orchestrator:
+        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
 
-    if not application_runner:
-        raise HTTPException(status_code=503, detail="Application Runner not initialized")
-
-    # Determine effort level hint
-    effort_hint = "MEDIUM"
-    if job.effort_mode:
-        effort_hint = job.effort_mode.upper()
-        if effort_hint not in ["LOW", "MEDIUM", "HIGH"]:
-            raise HTTPException(status_code=400, detail="effort_mode must be LOW, MEDIUM, or HIGH")
-
-    with AGENT_DURATION.time():
-        try:
-            # Create a new application ID
-            app_id = uuid4()
-
-            # In a real scenario, we might scrape the description if not provided.
-            # For v0.1, we require description_clean or title to be passed for matching,
-            # or we assume the runner handles scraping (which it does via form filler, but matching happens first).
-            # For this endpoint, let's assume metadata is passed or we use a placeholder if missing to allow the runner to proceed.
-
-            description = job.description_clean or f"Target: {job.title} at {job.company}"
-
-            # Get user profile (simplified for now, usually fetched from DB/Context)
-            # We'll use the profile loaded in the matcher as the base
-            user_profile = {
-                "name": os.getenv("USER_FULL_NAME", "Default User"),
-                "email": os.getenv("USER_EMAIL", "user@example.com")
-            }
-
-            result = await application_runner.run_application(
-                application_id=app_id,
-                job_url=job.url,
-                job_title=job.title or "Unknown Target",
-                company_name=job.company or "Unknown Entity",
-                job_description=description,
-                user_profile=user_profile,
-                user_effort_hint=effort_hint,
-                company_tier=job.company_tier
-            )
-
-            if result.get('status') == 'success':
-                return {"status": "success", "data": result}
-            else:
-                # We return 200 even on failure to indicate the *request* was processed,
-                # but the *workflow* failed.
-                return {"status": "workflow_failed", "data": result}
-
-        except Exception as e:
-            AGENT_ERRORS.inc()
-            raise HTTPException(status_code=500, detail=str(e))
+    try:
+        orchestrator.submit_job(req.job_post_id, req.mode)
+        return ApplyResponse(job_post_id=req.job_post_id, status="queued")
+    except Exception as e:
+        AGENT_ERRORS.inc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/analyze")

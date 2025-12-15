@@ -11,6 +11,8 @@ from mlflow.tracking import MlflowClient
 
 logger = logging.getLogger(__name__)
 
+ENABLE_MLFLOW = False  # hard-disable for now
+
 
 class MLflowTracker:
     """
@@ -25,6 +27,10 @@ class MLflowTracker:
         Args:
             experiment_name: Name of the MLflow experiment
         """
+        if not ENABLE_MLFLOW:
+            logger.info("MLflow tracking is disabled")
+            return
+
         # Set tracking URI from environment or use local
         tracking_uri = os.getenv('MLFLOW_TRACKING_URI', 'file:///app/mlruns')
         mlflow.set_tracking_uri(tracking_uri)
@@ -78,6 +84,9 @@ class MLflowTracker:
         if tags:
             default_tags.update(tags)
 
+        if not ENABLE_MLFLOW:
+            return "dummy_run_id"
+
         try:
             run = mlflow.start_run(run_name=run_name, tags=default_tags)
             logger.info(f"Started MLflow run: {run.info.run_id} for application {application_id}")
@@ -95,6 +104,9 @@ class MLflowTracker:
             params: Dictionary of parameters
         """
         try:
+            if not ENABLE_MLFLOW:
+                return
+
             for key, value in params.items():
                 # MLflow only accepts specific types
                 if isinstance(value, (str, int, float, bool)):
@@ -116,6 +128,9 @@ class MLflowTracker:
             step: Optional step number for sequential logging
         """
         try:
+            if not ENABLE_MLFLOW:
+                return
+
             for key, value in metrics.items():
                 if isinstance(value, (int, float)):
                     mlflow.log_metric(key, float(value), step=step)
@@ -160,6 +175,9 @@ class MLflowTracker:
         Returns:
             MLflow run ID
         """
+        if not ENABLE_MLFLOW:
+            return "dummy_run_id"
+
         tags = {
             'job_title': job_title,
             'company': company,
@@ -216,6 +234,9 @@ class MLflowTracker:
             total_cost: Total cost in USD
             total_tokens: Total tokens used
         """
+        if not ENABLE_MLFLOW:
+            return
+
         run_name = f"session_{str(session_id)[:8]}"
         tags = {
             'session_id': str(session_id),
@@ -248,6 +269,9 @@ class MLflowTracker:
             status: Run status (FINISHED, FAILED, KILLED)
         """
         try:
+            if not ENABLE_MLFLOW:
+                return
+
             mlflow.end_run(status=status)
             logger.debug(f"Ended MLflow run with status: {status}")
         except Exception as e:

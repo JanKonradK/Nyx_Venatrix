@@ -67,7 +67,8 @@ class EnhancedFormFiller(BaseAgent):
         job_description: str,
         user_profile: Dict,
         effort_level: str = "medium",
-        resume_path: Optional[str] = None
+        resume_path: Optional[str] = None,
+        cover_letter_content: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Fill job application form with stealth and answer generation.
@@ -87,8 +88,8 @@ class EnhancedFormFiller(BaseAgent):
         logger.info(f"Filling application: {job_title} at {company_name} (effort: {effort_level})")
 
         # Generate cover letter if medium or high effort
-        cover_letter = None
-        if effort_level.lower() in ['medium', 'high']:
+        cover_letter = cover_letter_content
+        if not cover_letter and effort_level.lower() in ['medium', 'high']:
             logger.info("Generating cover letter...")
             cover_letter = self.answer_gen.generate_cover_letter(
                 job_title=job_title,
