@@ -2,7 +2,6 @@
 
 **Advanced Distributed Agent System & Technical Showcase**
 
-[![CI](https://github.com/JanKonradK/Nyx_Venatrix/workflows/CI/badge.svg)](https://github.com/JanKonradK/Nyx_Venatrix/actions)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
 > A sophisticated distributed system demonstrating the convergence of browser automation, microservices architecture, and Large Language Models (LLMs) to solve complex, non-deterministic workflows.
